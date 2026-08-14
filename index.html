@@ -1,971 +1,192 @@
 <!doctype html>
 <html lang="fi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090507">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>VäNä AutoDyno v18 GPS Mic Priority Fix</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VÄNÄ MotoLab – AirPod RPM Tester</title>
 <style>
-:root{
-  --bg:#050304;--panel:#0b0c10;--panel2:#121216;--line:#4a2027;
-  --white:#f7f7f8;--muted:#9ba0a8;--red:#ff233f;--red2:#ff4b5f;
-  --green:#39f061;--yellow:#ffb71b;--blue:#3aa7ff;--gray:#707780;
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:#000;color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-body{background:linear-gradient(180deg,#030202,#090507 40%,#020202)}
-.app{
-  width:min(100vw,430px);min-height:100vh;margin:auto;position:relative;overflow:hidden;
-  padding:14px 10px calc(18px + env(safe-area-inset-bottom));
-  background:
-    radial-gradient(circle at 74% 14%,rgba(255,28,59,.16),transparent 22%),
-    radial-gradient(circle at 18% 80%,rgba(255,25,55,.10),transparent 24%),
-    linear-gradient(180deg,#050203,#090406 58%,#030202);
-}
-.app:before{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:
-    linear-gradient(130deg,transparent 0 60%,rgba(255,25,55,.16) 60.5%,transparent 61%),
-    linear-gradient(40deg,transparent 0 71%,rgba(255,25,55,.11) 71.4%,transparent 72%),
-    radial-gradient(circle at 55% 23%,rgba(255,37,70,.08),transparent 20%);
-}
-.app:after{
-  content:"";position:absolute;inset:0;pointer-events:none;opacity:.22;
-  background:
-    repeating-linear-gradient(112deg,transparent 0 44px,rgba(255,38,68,.10) 44px 47px,transparent 47px 96px),
-    repeating-linear-gradient(61deg,transparent 0 72px,rgba(255,255,255,.025) 72px 75px,transparent 75px 128px);
-}
-.topbar{position:relative;z-index:4;display:flex;justify-content:space-between;align-items:flex-start}
-.menu{
-  width:54px;height:54px;border-radius:15px;border:1.5px solid rgba(255,36,62,.72);
-  background:linear-gradient(180deg,#101115,#09090d);display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 18px rgba(255,25,55,.12), inset 0 0 14px rgba(0,0,0,.5)
-}
-.menu i,.menu i:before,.menu i:after{content:"";display:block;width:24px;height:3px;background:#fff;border-radius:99px;position:relative}
-.menu i:before{position:absolute;top:-7px}.menu i:after{position:absolute;top:7px}
-.topSensors{display:flex;gap:7px;align-items:center}
-.sensorBar,.battery{
-  border:1.4px solid rgba(150,160,174,.4);border-radius:14px;background:linear-gradient(180deg,#101216,#08090c);
-  box-shadow:inset 0 0 14px rgba(0,0,0,.35),0 0 14px rgba(255,255,255,.02)
-}
-.sensorBar{display:flex;gap:10px;padding:8px 10px}
-.sdot{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:#d8dde3}
-.sdot i{width:10px;height:10px;border-radius:50%;background:#555d67}
-.sdot.on i{background:var(--green);box-shadow:0 0 10px rgba(57,240,97,.5)}
-.battery{padding:8px 9px;width:64px;text-align:center;font-size:11px;font-weight:900}
-.batteryIcon{height:14px;border:1.5px solid #dfe4e8;border-radius:3px;position:relative;overflow:hidden;margin-bottom:3px}
-.batteryIcon:after{content:"";position:absolute;right:-4px;top:3px;width:3px;height:6px;border-radius:2px;background:#ddd}
-.batteryFill{height:100%;width:92%;background:linear-gradient(90deg,#5cff64,#2ac941)}
-
-.hero{position:relative;z-index:2;min-height:510px;margin-top:0}
-.vbadge{
-  position:absolute;left:176px;top:4px;z-index:5;color:var(--red);font-weight:1000;font-size:22px;font-style:italic;
-  border:1.5px solid rgba(255,36,62,.55);border-radius:8px;padding:1px 8px;transform:rotate(-6deg);
-  box-shadow:0 0 16px rgba(255,36,62,.12)
-}
-.logo{position:absolute;left:0;top:22px;z-index:4;width:220px}
-.logo .v1{font-size:74px;line-height:.83;font-weight:1000;font-style:italic;letter-spacing:-4px;transform:skewX(-10deg) rotate(-5deg);color:#fff}
-.logo .v2{font-size:52px;line-height:.88;font-weight:1000;font-style:italic;letter-spacing:-3px;transform:skewX(-12deg) rotate(-6deg);color:var(--red);text-shadow:0 0 18px rgba(255,36,62,.25)}
-.logo .tag{margin-top:9px;font-size:12px;letter-spacing:.18em;font-weight:800;color:#d7d7db;font-style:italic}
-.bike{position:absolute;right:-17px;top:30px;width:286px;max-width:69%;filter:drop-shadow(0 18px 22px rgba(0,0,0,.6))}
-.gauge{
-  position:absolute;left:0;bottom:8px;width:100%;height:280px;
-}
-.arc{
-  position:absolute;left:-26px;right:-26px;top:-80px;height:360px;border-radius:50%;
-  border:19px solid rgba(255,255,255,.10);border-bottom-color:transparent;
-  box-shadow:inset 0 0 25px rgba(255,255,255,.02)
-}
-.arcRed{
-  position:absolute;left:-26px;right:-26px;top:-80px;height:360px;border-radius:50%;
-  border:19px solid transparent;border-top-color:var(--red);border-right-color:var(--red);border-bottom-color:transparent;
-  transform:rotate(5deg);filter:drop-shadow(0 0 15px rgba(255,35,63,.45))
-}
-.gcenter{
-  position:absolute;left:50%;top:84px;transform:translateX(-50%);width:194px;height:194px;border-radius:50%;
-  background:radial-gradient(circle at 50% 38%,#16181d,#06070a 72%);border:1px solid rgba(150,160,174,.35);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 28px rgba(0,0,0,.5),inset 0 0 26px rgba(255,255,255,.015)
-}
-.gcenter .lab{font-size:16px;font-weight:900}.gcenter .rpm{font-size:74px;line-height:.94;font-weight:1000}.gcenter .tiny{font-size:14px;color:#dfe1e4}
-.gcenter .source{margin-top:10px;padding:5px 10px;border-radius:10px;background:#15171b;border:1px solid rgba(255,255,255,.08);font-size:11px;font-weight:800}
-.gcenter .source b{color:var(--red)}
-.ticks span{position:absolute;font-size:20px;font-weight:900;color:#f7f7f8}
-.t0{left:33px;bottom:46px}.t2{left:62px;top:118px}.t4{left:112px;top:66px}.t6{left:192px;top:49px}.t8{right:120px;top:69px}.t10{right:40px;top:125px}.t12{right:25px;bottom:48px}
-.needle{
-  position:absolute;left:50%;top:167px;width:118px;height:4px;background:linear-gradient(90deg,#f7f7f8,#ff2845);
-  transform-origin:0 50%;transform:rotate(-14deg);border-radius:999px;box-shadow:0 0 10px rgba(255,36,62,.55)
-}
-.needle:before{content:"";position:absolute;left:-8px;top:-6px;width:14px;height:14px;border-radius:50%;background:#ddd;border:2px solid #fff}
-
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;position:relative;z-index:3;margin-top:-4px}
-.stat{
-  min-height:112px;border-radius:18px;padding:12px 10px;background:linear-gradient(180deg,#111216,#090a0d);
-  border:1.4px solid rgba(145,150,160,.32);box-shadow:0 10px 24px rgba(0,0,0,.32),inset 0 0 16px rgba(0,0,0,.28)
-}
-.stat.red{border-color:rgba(255,36,62,.65)}
-.stat .title{font-size:11px;font-weight:1000;color:var(--red);text-transform:uppercase}
-.stat .title.white{color:#f5f5f6}
-.stat .val{font-size:35px;font-weight:1000;margin-top:8px}.stat .unit{font-size:13px;color:#d0d2d6}
-
-.controls{display:grid;grid-template-columns:1fr 1fr 1fr 1.25fr 1fr 1fr;gap:7px;margin-top:10px;position:relative;z-index:3}
-.ctrl{
-  min-height:96px;border-radius:17px;padding:10px 7px;text-align:center;position:relative;
-  background:linear-gradient(180deg,#111318,#090a0d);border:1.4px solid rgba(145,150,160,.35);
-  box-shadow:0 10px 22px rgba(0,0,0,.28),inset 0 0 16px rgba(0,0,0,.3)
-}
-.ctrl .ico{font-size:27px}.ctrl .main{margin-top:8px;font-size:12px;font-weight:1000}.ctrl .sub{margin-top:3px;font-size:9px;color:#9ba0a8}
-.ctrl.green{background:linear-gradient(180deg,#173a16,#0d240c);border-color:#3c8c35}
-.ctrl.green .sub{color:#55ec57}
-.ctrl.arm{background:linear-gradient(180deg,#68121f,#33080f);border-color:var(--red);box-shadow:0 0 20px rgba(255,36,62,.18),0 10px 22px rgba(0,0,0,.28)}
-.ctrl.arm .sub{color:#ff3c55}
-.info{
-  position:absolute;right:6px;top:6px;width:20px;height:20px;border-radius:50%;background:#14161a;border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:1000;color:#dfe2e5
-}
-
-.panel{
-  margin-top:10px;position:relative;z-index:3;border-radius:17px;background:linear-gradient(180deg,#0d0f13,#08090c);
-  border:1.4px solid rgba(130,140,150,.32);box-shadow:0 12px 28px rgba(0,0,0,.32),inset 0 0 20px rgba(0,0,0,.28);overflow:hidden
-}
-.phead{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05)}
-.ptitle{font-size:14px;font-weight:1000;font-style:italic;text-transform:uppercase}
-.ptitle .r{color:var(--red)}
-.priority{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px}
-.prio{
-  min-height:74px;border-radius:14px;padding:9px 10px;background:linear-gradient(180deg,#14161a,#0b0c0f);
-  border:1.3px solid rgba(150,155,164,.25);position:relative
-}
-.prio.active{background:linear-gradient(180deg,#5d0d18,#28060b);border-color:var(--red);box-shadow:0 0 18px rgba(255,36,62,.14)}
-.prio .rank{
-  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#292c31;font-size:18px;font-weight:1000;position:absolute;left:8px;top:9px
-}
-.prio.active .rank{background:linear-gradient(180deg,#ff2b46,#bb1228)}
-.prio .label{margin-left:39px;font-size:13px;font-weight:1000}.prio .state{margin-left:39px;margin-top:5px;font-size:10px;color:#8f949c}.prio.active .state{color:#ff5267}
-
-.chartWrap{padding:10px}
-#dyno{width:100%;height:230px;background:#07080a;border-radius:10px;border:1px solid rgba(255,255,255,.05)}
-
-.bottom{
-  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px;position:relative;z-index:3
-}
-.nav{
-  min-height:90px;border-radius:15px;background:linear-gradient(180deg,#0e1014,#08090c);border:1.3px solid rgba(135,145,155,.3);
-  text-align:center;padding:12px 5px;box-shadow:0 10px 22px rgba(0,0,0,.25),inset 0 0 15px rgba(0,0,0,.25)
-}
-.nav.active{background:linear-gradient(180deg,#4c0b15,#25050a);border-color:var(--red);box-shadow:0 0 18px rgba(255,36,62,.16),0 10px 22px rgba(0,0,0,.25)}
-.nav .ico{font-size:30px}.nav .txt{font-size:11px;font-weight:1000;margin-top:7px;font-style:italic}
-.nav.active .txt{color:var(--red)}
-
-.modal{position:fixed;inset:0;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.68);z-index:50;padding:10px}
-.modal.show{display:flex}
-.sheet{width:min(100%,430px);background:linear-gradient(180deg,#121318,#090a0d);border:1.4px solid rgba(255,36,62,.55);border-radius:24px 24px 18px 18px;padding:16px;box-shadow:0 -10px 30px rgba(0,0,0,.45),0 0 20px rgba(255,36,62,.08)}
-.sheet h3{margin:0 0 8px;font-size:20px}.sheet p{margin:0;color:#c9ccd1;line-height:1.5;font-size:13px}
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.meta div{padding:10px;border-radius:13px;background:#0d0f13;border:1px solid rgba(255,255,255,.05)}.meta span{display:block;font-size:9px;color:#8d9299;text-transform:uppercase}.meta b{display:block;margin-top:4px;font-size:13px}
-.close{width:100%;margin-top:12px;border:0;border-radius:13px;padding:12px;background:linear-gradient(180deg,#ff2a46,#b91028);color:#fff;font-weight:1000}
-@media(max-width:390px){
-  .logo .v1{font-size:66px}.logo .v2{font-size:47px}.vbade{left:160px}
-  .bike{width:260px}.gcenter{width:180px;height:180px}.gcenter .rpm{font-size:66px}
-  .stats{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr 1fr}.priority{grid-template-columns:1fr}.bottom{grid-template-columns:repeat(5,1fr)}
-}
-
-.screen{display:none}
-.screen.active{display:block}
-.bottom .nav{
-  appearance:none;color:#fff;font-family:inherit;cursor:pointer;
-}
-.navAction{
-  width:100%;padding:12px;border-radius:13px;border:1px solid #ff233f;
-  background:linear-gradient(180deg,#5f101b,#2d070d);color:#fff;font-weight:1000;
-}
-.navAction.danger{background:linear-gradient(180deg,#3c3f46,#1a1c20);border-color:#5f6268}
-.statusBox{
-  padding:11px;border-radius:13px;background:#090a0d;border:1px solid #302128;color:#c8ccd2;font-size:12px;line-height:1.45;
-}
-.analysisCard{
-  display:flex;justify-content:space-between;gap:10px;padding:11px;margin-bottom:8px;
-  border-radius:13px;background:#090a0d;border:1px solid #302128;
-}
-.analysisCard span{color:#999fa8;font-size:11px}.analysisCard b{font-size:13px}
-.setLabel{font-size:10px;color:#9ba0a8}
-.setLabel input,.setLabel select{
-  width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff
-}
-.runItem{
-  padding:10px;margin-bottom:8px;border-radius:13px;background:#090a0d;border:1px solid #302128;font-size:11px
-}
-.runItem b{color:#ff5267}
-
-
-.infoToggleRow{
-  grid-column:1/-1;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:11px 12px;border-radius:13px;background:#090a0d;border:1px solid #342126;
-}
-.infoToggleRow .left b{display:block;font-size:12px}
-.infoToggleRow .left span{display:block;margin-top:3px;color:#9ba0a8;font-size:10px;line-height:1.35}
-.switch{
-  width:54px;height:30px;border:0;border-radius:999px;background:#34383e;position:relative;flex:0 0 auto;
-  box-shadow:inset 0 0 10px rgba(0,0,0,.4);padding:0;cursor:pointer;
-}
-.switch:before{
-  content:"";position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;
-  background:#9fa4ab;transition:.18s ease;
-}
-.switch.on{background:linear-gradient(180deg,#ff304c,#a91126);box-shadow:0 0 16px rgba(255,35,63,.18),inset 0 0 10px rgba(0,0,0,.2)}
-.switch.on:before{left:28px;background:#fff}
-body.info-off .info[data-info]{display:none!important}
-
+body{margin:0;background:#08090c;color:#f5f7fa;font-family:system-ui,-apple-system,sans-serif}
+.wrap{max-width:900px;margin:auto;padding:16px}.card{background:#151820;border:1px solid #2c323d;border-radius:18px;padding:14px;margin-bottom:12px}
+h1{font-size:22px;margin:0 0 12px}.red{color:#ff3535}.rpm{text-align:center;font-size:72px;font-weight:900;letter-spacing:-4px}.unit{font-size:16px;color:#9ca7b5}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.box{background:#0c0f14;border-radius:12px;padding:10px;text-align:center}.box b{font-size:20px}.box span{display:block;color:#9ca7b5;font-size:10px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}select,input,button{width:100%;padding:11px;border-radius:10px;border:1px solid #37404c;background:#0d1015;color:white}
+button{font-weight:800}.start{background:#d91d1d}.wide{grid-column:1/-1}.status{font-size:12px;color:#b7c0cc}
+canvas{width:100%;height:230px;background:#090b0f;border-radius:12px}.harms{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.h{background:#0c0f14;border-radius:9px;padding:7px;text-align:center;font-size:11px}.h span{display:block;color:#9ca7b5;font-size:9px}
+@media(max-width:650px){.rpm{font-size:58px}.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.wide{grid-column:auto}.harms{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
-<body>
-<div class="app">
-  <div class="topbar">
-    <div class="menu"><i></i></div>
-    <div class="topSensors">
-      <div class="sensorBar">
-        <div id="topGps" class="sdot"><i></i>GPS</div>
-        <div id="topImu" class="sdot"><i></i>IMU</div>
-        <div id="topMic" class="sdot"><i></i>MIC</div>
-        
-      </div>
-      <div class="battery">
-        <div class="batteryIcon"><div class="batteryFill"></div></div>
-        92%
-      </div>
-    </div>
+<body><div class="wrap">
+<h1>VÄNÄ <span class="red">MOTOLAB</span> – AIRPOD RPM TESTER</h1>
+
+<div class="card">
+<div class="rpm"><span id="rpm">0</span> <span class="unit">RPM</span></div>
+<div id="lock" style="text-align:center;color:#ffb020;font-weight:800">EI LUKITUSTA</div>
+<div class="grid" style="margin-top:12px">
+<div class="box"><b id="conf">0%</b><span>CONFIDENCE</span></div>
+<div class="box"><b id="fund">0 Hz</b><span>PERUSTAAJUUS</span></div>
+<div class="box"><b id="level">-∞ dB</b><span>MIC LEVEL</span></div>
+</div>
+</div>
+
+<div class="card controls">
+<div><label>Mikrofoni</label><select id="device"><option value="">Oletusmikrofoni</option></select></div>
+<div><label>Pulssit / kierros</label><input id="ppr" type="number" step=".25" value="1"></div>
+<div><label>Min RPM</label><input id="min" type="number" value="1500"></div>
+<div><label>Max RPM</label><input id="max" type="number" value="15000"></div>
+<button id="start" class="start">KÄYNNISTÄ MIKROFONI</button><button id="stop">PYSÄYTÄ</button>
+<div class="wide status" id="status">Yhdistä AirPod ensin puhelimeen. HTTPS suositeltu/vaadittu mikrofonille.</div>
+</div>
+
+
+<div class="card">
+  <h2 style="font-size:16px;margin:0 0 10px">RPM-KALIBROINTI</h2>
+  <div class="status" style="margin-bottom:10px">
+    Pidä moottori tasaisesti tunnetussa kierrosluvussa ja paina kalibrointia.
+    Sovellus oppii juuri tämän mikrofonin/moottorin harmonisen suhteen.
   </div>
-
-  <section class="hero">
-    <div class="vbade" style="position:absolute;left:174px;top:4px;color:#ff233f;font-weight:1000;font-size:22px;font-style:italic;border:1.5px solid rgba(255,36,62,.55);border-radius:8px;padding:1px 8px;transform:rotate(-6deg)">v18</div>
-    <div class="logo">
-      <div class="v1">VäNä</div>
-      <div class="v2">AutoDyno</div>
-      <div class="tag">MITTAA • OPTIMOI • DOMINOI</div>
-    </div>
-    <img src="bike.png?v=12" class="bike" alt="">
-    <div class="gauge">
-      <div class="arc"></div><div class="arcRed"></div>
-      <div class="ticks">
-        <span class="t0">0</span><span class="t2">2</span><span class="t4">4</span><span class="t6">6</span><span class="t8">8</span><span class="t10">10</span><span class="t12">12</span>
-      </div>
-      <div class="needle" id="needle"></div>
-      <div class="gcenter">
-        <div class="lab">RPM</div>
-        <div class="rpm" id="rpmMain">0</div>
-        <div class="tiny">x1000</div>
-        <div class="source">RPM lähde: <b id="rpmSourceMain">NOPEUS</b></div>
-      </div>
-    </div>
-  </section>
-
-  <div id="screen-measure" class="screen active">
-  <div class="stats">
-    <div class="stat red"><div class="title">NOPEUS</div><div class="val" id="speedMain">0</div><div class="unit">km/h</div></div>
-    <div class="stat red"><div class="title">TEHO</div><div class="val"><span id="hpMain">0.0</span></div><div class="unit">hv</div></div>
-    <div class="stat red"><div class="title">VÄÄNTÖ</div><div class="val"><span id="nmMain">0.0</span></div><div class="unit">Nm</div></div>
-    <div class="stat"><div class="title white">G</div><div class="val" id="gMain">0.00</div><div class="unit">G</div></div>
-  </div>
-
   <div class="controls">
-    <div id="sensorBtn" class="ctrl"><div class="info" data-info="sensors">i</div><div class="ico">〰️</div><div class="main">ANTURIT</div><div class="sub" id="sensorState">POIS</div></div>
-    <div id="micBtn" class="ctrl"><div class="info" data-info="mic">i</div><div class="ico">🎤</div><div class="main">MIKROFONI</div><div class="sub" id="micState">POIS</div></div>
-    <div id="armBtn" class="ctrl arm"><div class="info" data-info="arm">i</div><div class="ico">🎯</div><div class="main">ARM AUTO</div><div class="sub" id="armState">VALMIS</div></div>
-    <div id="manualBtn" class="ctrl"><div class="info" data-info="manual">i</div><div class="ico">📖</div><div class="main">MANUAALI</div><div class="sub" id="manualState">VALMIS</div></div>
-    <div id="stopBtn" class="ctrl"><div class="info" data-info="stop">i</div><div class="ico">◼️</div><div class="main">STOP</div><div class="sub" id="stopState">VALMIS</div></div>
-  </div>
-
-
-  <section class="panel">
-    <div class="phead">
-      <div class="ptitle"><span class="r">📡</span> LIVE ANTURIT</div>
-      <div class="info" data-info="sensors">i</div>
+    <div>
+      <label>Kalibrointikierrosluku</label>
+      <select id="calRpm">
+        <option value="3000">3000 RPM</option>
+        <option value="5000" selected>5000 RPM</option>
+        <option value="7000">7000 RPM</option>
+      </select>
     </div>
-    <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div class="analysisCard"><span>Motion eventit</span><b id="motionCount">0</b></div>
-      <div class="analysisCard"><span>Motion Hz</span><b id="motionHz">0</b></div>
-      <div class="analysisCard"><span>Accel X</span><b id="ax">0.00</b></div>
-      <div class="analysisCard"><span>Accel Y</span><b id="ay">0.00</b></div>
-      <div class="analysisCard"><span>Accel Z</span><b id="az">0.00</b></div>
-      <div class="analysisCard"><span>Accel |a|</span><b id="amag">0.00</b></div>
-      <div class="analysisCard"><span>Gyro α</span><b id="gyroA">0.0</b></div>
-      <div class="analysisCard"><span>Gyro β</span><b id="gyroB">0.0</b></div>
-      <div class="analysisCard"><span>Gyro γ</span><b id="gyroG">0.0</b></div>
-      <div class="analysisCard"><span>Pitch β</span><b id="oriB">–</b></div>
-      <div class="analysisCard"><span>Roll γ</span><b id="oriG">–</b></div>
-      <div class="analysisCard"><span>GPS nopeus</span><b id="gpsSpeedLive">0.0 km/h</b></div>
-      <div class="analysisCard"><span>GPS tarkkuus</span><b id="gpsAccLive">–</b></div>
-      <div class="analysisCard"><span>GPS päivitykset</span><b id="gpsCount">0</b></div>
-      <div class="analysisCard"><span>GPS lupa</span><b id="gpsPerm">–</b></div>
-      <div class="analysisCard"><span>GPS sijainti</span><b id="gpsPos">–</b></div>
-      <div class="analysisCard"><span>Mic RPM</span><b id="micRpmLive">–</b></div>
-      <div class="analysisCard"><span>Mic luottamus</span><b id="micConfLive">0%</b></div>
-      <div class="analysisCard"><span>Audio tila</span><b id="audioState">–</b></div>
+    <div>
+      <label>Kalibroinnin tila</label>
+      <input id="calStatus" value="Ei kalibroitu" readonly>
     </div>
-    <div id="sensorHelp" class="statusBox" style="margin:0 10px 10px">Paina ANTURIT ja liikuta puhelinta. Motion eventtien pitäisi alkaa nousta heti.</div>
-  </section>
-
-  <section class="panel">
-    <div class="phead"><div class="ptitle"><span class="r">🎯</span> RPM LÄHDE & PRIORITEETTI</div><div class="info" data-info="rpmprio">i</div></div>
-    <div class="priority">
-      <div class="prio active"><div class="rank">1</div><div class="label">NOPEUS</div><div class="state">AKTIIVINEN</div></div>
-      <div class="prio"><div class="rank">2</div><div class="label">MIKROFONI</div><div class="state">VARA</div></div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="phead"><div class="ptitle"><span class="r">📈</span> DYNO KÄYRÄ – TEHO (HV) & VÄÄNTÖ (NM)</div></div>
-    <div class="chartWrap"><canvas id="dyno" width="390" height="230"></canvas></div>
-  </section>
-
-
-  <section class="panel">
-    <div class="phead"><div class="ptitle"><span class="r">⚙️</span> MITTAUSASETUKSET</div><div class="info" data-info="settings">i</div></div>
-    <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <label style="font-size:10px;color:#9ba0a8">Massa kg<input id="mass" type="number" value="190" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"></label>
-      <label style="font-size:10px;color:#9ba0a8">Vaihde<select id="gear" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></label>
-      <label style="font-size:10px;color:#9ba0a8">Kalibrointi km/h<input id="calSpeed" type="number" value="60" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"></label>
-      <label style="font-size:10px;color:#9ba0a8">Kalibrointi rpm<input id="calRpm" type="number" value="6000" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"></label>
-      <label style="font-size:10px;color:#9ba0a8">Record from<input id="recordFrom" type="number" value="1500" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"></label>
-      <label style="font-size:10px;color:#9ba0a8">Stop rpm<input id="stopRpm" type="number" value="10500" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"></label>
-      <label style="font-size:10px;color:#9ba0a8">Stop viive s<input id="stopDelay" type="number" value=".7" step=".1" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"></label>
-      <label style="font-size:10px;color:#9ba0a8">Mikrofoni min RPM<input id="micMin" type="number" value="1200" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"></label>
-      <label style="font-size:10px;color:#9ba0a8">Mikrofoni max RPM<input id="micMax" type="number" value="12000" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"></label>
-      <label style="font-size:10px;color:#9ba0a8">RPM prioriteetti 1<select id="rpmP1" style="width:100%;margin-top:4px;padding:9px;border-radius:10px;border:1px solid #342126;background:#090a0d;color:#fff"><option value="speed">Nopeus</option><option value="mic">Mikrofoni</option></select></label>
-      <button id="calBtn" style="grid-column:1/-1;padding:12px;border-radius:13px;border:1px solid #ff233f;background:linear-gradient(#6a101d,#33070d);color:#fff;font-weight:1000">RPM KALIBROI</button>
-    </div>
-    <div id="status" style="margin:0 10px 10px;padding:10px;border-radius:12px;border:1px solid #342126;background:#090a0d;color:#c7c9ce;font-size:11px">Valmis. Salli anturit ennen mittausta.</div>
-  </section>
-
-
-  <section class="panel">
-    <div class="phead"><div class="ptitle"><span class="r">🧪</span> JÄRJESTELMÄTESTI</div></div>
-    <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px">
-      <div style="padding:9px;border-radius:11px;background:#090a0d;border:1px solid #302128">HTTPS / secure context<br><b id="diagSecure">–</b></div>
-      <div style="padding:9px;border-radius:11px;background:#090a0d;border:1px solid #302128">GPS API<br><b id="diagGps">–</b></div>
-      <div style="padding:9px;border-radius:11px;background:#090a0d;border:1px solid #302128">Motion API<br><b id="diagMotion">–</b></div>
-<div style="padding:9px;border-radius:11px;background:#090a0d;border:1px solid #302128">Orientation API<br><b id="diagOrientation">–</b></div>
-      <div style="padding:9px;border-radius:11px;background:#090a0d;border:1px solid #302128">Media API<br><b id="diagMedia">–</b></div>
-      <button id="selfTestBtn" style="grid-column:1/-1;padding:12px;border-radius:13px;border:1px solid #ff233f;background:linear-gradient(#5d101b,#2a070c);color:#fff;font-weight:1000">AJA JÄRJESTELMÄTESTI</button>
-    </div>
-    <pre id="diagLog" style="white-space:pre-wrap;margin:0 10px 10px;padding:10px;border-radius:12px;background:#07080a;border:1px solid #302128;color:#bfc4ca;font:10px/1.4 ui-monospace,monospace;max-height:190px;overflow:auto">V14 valmis.</pre>
-  </section>
-
-  </div>
-
-
-  <div id="screen-runs" class="screen">
-    <section class="panel">
-      <div class="phead"><div class="ptitle"><span class="r">🏁</span> VEDOT</div></div>
-      <div id="runsList" style="padding:10px"></div>
-      <div style="padding:0 10px 10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button id="compareRunsBtn" class="navAction">VERTAA</button>
-        <button id="clearRunsBtn" class="navAction danger">TYHJENNÄ</button>
-      </div>
-    </section>
-    <section class="panel">
-      <div class="phead"><div class="ptitle"><span class="r">📈</span> VERTAILUKÄYRÄ</div></div>
-      <div class="chartWrap"><canvas id="compareChart" width="390" height="230"></canvas></div>
-    </section>
-  </div>
-
-  <div id="screen-analysis" class="screen">
-    <section class="panel">
-      <div class="phead"><div class="ptitle"><span class="r">📉</span> ANALYYSI</div></div>
-      <div style="padding:10px">
-        <div class="analysisCard"><span>Viimeisin veto</span><b id="analysisLatest">Ei vetoja</b></div>
-        <div class="analysisCard"><span>Huipputeho</span><b id="analysisHp">–</b></div>
-        <div class="analysisCard"><span>Huippuvääntö</span><b id="analysisNm">–</b></div>
-        <div class="analysisCard"><span>RPM-alue</span><b id="analysisRpm">–</b></div>
-        <div id="analysisText" class="statusBox">Tallenna vähintään yksi veto analyysiä varten.</div>
-      </div>
-    </section>
-  </div>
-
-  <div id="screen-autotune" class="screen">
-    <section class="panel">
-      <div class="phead"><div class="ptitle"><span class="r">💾</span> AUTOTUNE</div><div class="info" data-info="autotune">i</div></div>
-      <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <label class="setLabel">Analysoi alkaen RPM<input id="analyzeFrom2" type="number" value="4000"></label>
-        <label class="setLabel">RPM askel<input id="rpmStep2" type="number" value="500"></label>
-        <label class="setLabel">Max muutos / veto °<input id="maxStep2" type="number" value=".5" step=".1"></label>
-        <label class="setLabel">Ohjain<select id="ecu2"><option>Arduino</option><option>Zeeltronic</option></select></label>
-        <button id="tuneSuggestBtn" class="navAction" style="grid-column:1/-1">LUO AUTOTUNE-EHDOTUS</button>
-      </div>
-      <div id="tuneResult" class="statusBox" style="margin:0 10px 10px">Tarvitaan vähintään kaksi vertailuvetoa.</div>
-    </section>
-  </div>
-
-  <div id="screen-settings" class="screen">
-    <section class="panel">
-      <div class="phead"><div class="ptitle"><span class="r">⚙️</span> ASETUKSET</div></div>
-      <div style="padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <label class="setLabel">Massa kg<input id="settingsMass" type="number" value="190"></label>
-        <label class="setLabel">Vaihde<select id="settingsGear"><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></label>
-        <label class="setLabel">Record from RPM<input id="settingsRecord" type="number" value="1500"></label>
-        <label class="setLabel">Stop RPM<input id="settingsStop" type="number" value="10500"></label>
-        <label class="setLabel">Stop viive s<input id="settingsDelay" type="number" value=".7" step=".1"></label>
-        <label class="setLabel">Mikrofoni min RPM<input id="settingsMicMin" type="number" value="1200"></label>
-        <label class="setLabel">Mikrofoni max RPM<input id="settingsMicMax" type="number" value="12000"></label>
-        <label class="setLabel">RPM prioriteetti 1<select id="settingsP1"><option value="speed">Nopeus</option><option value="mic">Mikrofoni</option></select></label>
-        
-        <div class="infoToggleRow">
-          <div class="left">
-            <b>ⓘ Info-napit</b>
-            <span>Näytä tai piilota toimintojen pienet info-napit koko sovelluksessa.</span>
-          </div>
-          <button id="infoToggleBtn" class="switch on" type="button" aria-label="Info-napit päällä"></button>
-        </div>
-        <button id="saveSettingsBtn" class="navAction" style="grid-column:1/-1">TALLENNA ASETUKSET</button>
-      </div>
-      <div id="settingsStatus" class="statusBox" style="margin:0 10px 10px">Asetukset tallennetaan tähän laitteeseen.</div>
-    </section>
-  </div>
-
-  <div class="bottom">
-    <button class="nav active" data-screen="measure"><div class="ico">⏱️</div><div class="txt">MITTAUS</div></button>
-    <button class="nav" data-screen="runs"><div class="ico">🏁</div><div class="txt">VEDOT</div></button>
-    <button class="nav" data-screen="analysis"><div class="ico">📉</div><div class="txt">ANALYYSI</div></button>
-    <button class="nav" data-screen="autotune"><div class="ico">💾</div><div class="txt">AUTOTUNE</div></button>
-    <button class="nav" data-screen="settings"><div class="ico">⚙️</div><div class="txt">ASETUKSET</div></button>
+    <button id="calibrate" class="start wide">KALIBROI TÄSSÄ RPM:SSÄ</button>
+    <button id="clearCal" class="wide">TYHJENNÄ KALIBROINTI</button>
   </div>
 </div>
 
-<div class="modal" id="modal">
-  <div class="sheet">
-    <h3 id="mtitle">Info</h3>
-    <p id="mtext"></p>
-    <div class="meta">
-      <div><span>Tila</span><b id="mstate">–</b></div>
-      <div><span>Huomio</span><b id="mvalue">–</b></div>
-    </div>
-    <button class="close" id="close">SULJE</button>
-  </div>
+<div class="card"><canvas id="cv" width="900" height="240"></canvas><div id="harms" class="harms"></div></div>
+<div class="card status">
+<b>Testi:</b> kiinnitä AirPod moottorin lähelle pehmeällä välikerroksella ja suojaa suoralta ilmavirralta. Testaa ensin paikallaan. Hyvä tulos: RPM seuraa kaasua tasaisesti ja confidence pysyy korkeana.
+</div>
 </div>
 
 <script>
-const infos={
-  sensors:{title:"Anturit",text:"GPS, kiihtyvyys, gyro ja orientaatio muodostavat mittauksen sensorifuusion. LIVE ANTURIT -paneeli näyttää suoraan, tuleeko puhelimesta oikeaa dataa.",state:"Aktiivinen",value:"GPS + IMU käytössä"},
-  mic:{title:"Mikrofoni RPM",text:"Mikrofoni arvioi moottorin kierroslukua äänen jaksollisuudesta. Nopeus/välitys pysyy oletuksena tärkeimpänä RPM-lähteenä.",state:"Aktiivinen",value:"Toissijainen RPM-lähde"},
-  arm:{title:"ARM AUTO",text:"Valmistelee automaattisen vedon. Sovellus odottaa valittua aloitus-RPM:ää ja kiihtyvyyttä ja tallentaa esipuskurin mukaan.",state:"Aktiivinen",value:"Auto-start valmiina"},
-  manual:{title:"Manuaali",text:"Aloittaa vedon heti ilman automaattisia starttiehtoja.",state:"Valmis",value:"Käyttäjän käynnistys"},
-  stop:{title:"STOP",text:"Lopettaa käynnissä olevan vedon ja tallentaa datan.",state:"Valmis",value:"Manuaalinen varmistus"},
-  rpmprio:{title:"RPM lähde & prioriteetti",text:"Oletusjärjestys on nopeus → mikrofoni. Järjestystä voi vaihtaa asetuksista.",state:"Nopeus prioriteetti 1",value:"Mikrofoni 2"},
-  settings:{title:"Mittausasetukset",text:"Kalibroi valitulle vaihteelle nopeuden ja RPM:n suhde. Aseta myös massan, aloitus-RPM:n ja stop-RPM:n arvot ennen vetoa.",state:"Valmis",value:"Asetukset tallennetaan selaimeen"},
-  autotune:{title:"AutoTune",text:"Vertaa kahta viimeistä vetoa RPM-alueittain ja tekee seuraavaa testivetoa varten pienen sytytysennakkoehdotuksen. Karttaa ei muuteta kesken vedon.",state:"Ehdotustila",value:"Vaatii 2 vertailuvetoa"}
-};
-document.querySelectorAll(".info[data-info]").forEach(el=>el.addEventListener("click",e=>{
-  e.stopPropagation();
-  const d=infos[el.dataset.info];
-  document.getElementById("mtitle").textContent=d.title;
-  document.getElementById("mtext").textContent=d.text;
-  document.getElementById("mstate").textContent=d.state;
-  document.getElementById("mvalue").textContent=d.value;
-  document.getElementById("modal").classList.add("show");
-}));
-document.getElementById("close").onclick=()=>document.getElementById("modal").classList.remove("show");
-document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show")};
+const $=x=>document.getElementById(x), E={rpm:$('rpm'),conf:$('conf'),fund:$('fund'),level:$('level'),lock:$('lock'),dev:$('device'),ppr:$('ppr'),min:$('min'),max:$('max'),start:$('start'),stop:$('stop'),status:$('status'),cv:$('cv'),harms:$('harms'),calRpm:$('calRpm'),calStatus:$('calStatus'),calibrate:$('calibrate'),clearCal:$('clearCal')};
+let ac,an,st,freq,time,raf,last=0,smooth=0,stable=0;
+let calFactor=1, calActive=false, calSamples=[], calEnd=0;
 
-function drawDyno(){
-  const c=document.getElementById("dyno"),x=c.getContext("2d"),w=c.width,h=c.height;
-  x.clearRect(0,0,w,h);
-  x.strokeStyle="rgba(255,255,255,.08)";x.lineWidth=1;
-  for(let i=0;i<8;i++){let y=16+i*(h-34)/7;x.beginPath();x.moveTo(30,y);x.lineTo(w-18,y);x.stroke()}
-  for(let i=0;i<10;i++){let px=30+i*(w-48)/9;x.beginPath();x.moveTo(px,14);x.lineTo(px,h-20);x.stroke()}
-  x.fillStyle="#ff2a46";x.font="bold 12px Arial";x.fillText("HV",8,20);
-  x.fillStyle="#aaaeb6";x.fillText("NM",w-26,20);
-  x.fillStyle="#cfd2d7";x.font="bold 9px Arial";
-  [2000,4000,6000,8000,10000,12000].forEach((v,i)=>x.fillText(String(v),42+i*58,h-6));
-
-  const hp=[[1200,4],[2500,10],[4200,16],[5800,23],[7000,30],[8200,37],[9300,34],[10600,28],[12000,21]];
-  const nm=[[1200,5],[2500,18],[4200,27],[5600,31],[7000,30],[8200,27],[9300,23],[10600,15],[12000,10]];
-  const X=r=>30+(r-1000)/(12000-1000)*(w-48);
-  const Y=v=>h-20-(v/40)*(h-36);
-
-  let grad=x.createLinearGradient(0,0,w,0);grad.addColorStop(0,"rgba(255,35,63,.05)");grad.addColorStop(1,"rgba(255,35,63,.30)");
-  x.beginPath();hp.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.lineTo(X(12000),h-20);x.lineTo(X(1200),h-20);x.closePath();x.fillStyle=grad;x.fill();
-
-  x.strokeStyle="#ff233f";x.lineWidth=3;x.beginPath();hp.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke();
-  x.strokeStyle="#a5a8ad";x.lineWidth=3;x.beginPath();nm.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.stroke();
-
-  const mx=X(8200);x.strokeStyle="rgba(255,255,255,.48)";x.lineWidth=1;x.beginPath();x.moveTo(mx,14);x.lineTo(mx,h-20);x.stroke();
-  x.fillStyle="#fff";x.beginPath();x.arc(mx,Y(37),5,0,Math.PI*2);x.fill();x.strokeStyle="#ff233f";x.lineWidth=4;x.stroke();
-  x.fillStyle="#fff";x.beginPath();x.arc(mx,Y(27),5,0,Math.PI*2);x.fill();x.strokeStyle="#a5a8ad";x.lineWidth=4;x.stroke();
+async function devices(){
+ try{
+  const ds=await navigator.mediaDevices.enumerateDevices(); const a=ds.filter(d=>d.kind==='audioinput');
+  let old=E.dev.value; E.dev.innerHTML='<option value="">Oletusmikrofoni</option>';
+  a.forEach((d,i)=>{let o=document.createElement('option');o.value=d.deviceId;o.textContent=d.label||('Mikrofoni '+(i+1));E.dev.appendChild(o)});
+  if([...E.dev.options].some(o=>o.value===old))E.dev.value=old;
+ }catch{}
 }
-drawDyno();
-
-
-
-let rpmPerKmh=0;
-try{rpmPerKmh=+(localStorage.getItem("vanaV14ratio")||localStorage.getItem("vanaV13ratio")||0)}catch{}
-let armed=false,recording=false,run=[],prebuffer=[],lastV=0,lastT=0,filtA=0,imuA=0,lastImu=0,accelEndedAt=0;
-let gpsWatch=null,micRpm=NaN,micConf=0,audioCtx=null,analyser=null,audioBuf=null,audioTimer=null;
-let motionBound=false,orientationBound=false,motionCount=0,gpsCount=0,lastMotionStamp=0,motionHz=0,orientationState={alpha:null,beta:null,gamma:null};
-
-const $=id=>document.getElementById(id);
-function log(msg){
-  const stamp=new Date().toLocaleTimeString("fi-FI");
-  const el=$("diagLog"); if(el) el.textContent=`${stamp}  ${msg}\n`+el.textContent.slice(0,5000);
+function stop(){
+ if(raf)cancelAnimationFrame(raf);raf=0;if(st)st.getTracks().forEach(t=>t.stop());st=null;if(ac)ac.close();ac=null;an=null;
 }
-window.addEventListener("error",e=>log("JS VIRHE: "+e.message));
-window.addEventListener("unhandledrejection",e=>log("PROMISE VIRHE: "+(e.reason?.message||e.reason)));
-
-function setStatus(txt){$("status").textContent=txt;log(txt)}
-function setActive(id,on,stateId,onText="AKTIIVINEN",offText="POIS"){
-  const el=$(id); if(!el)return;
-  if(id!=="armBtn")el.classList.toggle("green",!!on);
-  if(id==="armBtn")el.classList.toggle("arm",!!on);
-  if(stateId&&$(stateId))$(stateId).textContent=on?onText:offText;
+async function start(){
+ try{
+  stop();
+  st=await navigator.mediaDevices.getUserMedia({audio:{deviceId:E.dev.value?{exact:E.dev.value}:undefined,echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}});
+  ac=new (AudioContext||webkitAudioContext)(); await ac.resume();
+  const s=ac.createMediaStreamSource(st);an=ac.createAnalyser();an.fftSize=8192;an.smoothingTimeConstant=.35;s.connect(an);
+  freq=new Float32Array(an.frequencyBinCount);time=new Float32Array(an.fftSize);await devices();
+  E.status.textContent='Käynnissä: '+(st.getAudioTracks()[0].label||'mikrofoni')+' / '+ac.sampleRate+' Hz';last=0;smooth=0;stable=0;loop();
+ }catch(e){E.status.textContent='Mikrofoni ei käynnistynyt: '+e.message}
 }
-function updateDiag(){
-  $("diagSecure").textContent=window.isSecureContext?"OK":"EI";
-  $("diagSecure").style.color=window.isSecureContext?"#39f061":"#ff233f";
-  $("diagGps").textContent=("geolocation" in navigator)?"OK":"EI";
-  $("diagMotion").textContent=(typeof DeviceMotionEvent!=="undefined")?"OK":"EI";
-  $("diagOrientation").textContent=(typeof DeviceOrientationEvent!=="undefined")?"OK":"EI";
-  $("diagMedia").textContent=(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)?"OK":"EI";
+function dbAt(hz){
+ const b=Math.round(hz*an.fftSize/ac.sampleRate);if(b<1||b>=freq.length)return-120;let m=-120;
+ for(let i=Math.max(1,b-2);i<=Math.min(freq.length-1,b+2);i++)m=Math.max(m,freq[i]);return m;
 }
-updateDiag();
-
-function chooseRpm(speedRpm){
-  const primary=$("rpmP1")?.value||"speed";
-  const vals={
-    speed:{rpm:speedRpm,conf:rpmPerKmh>0?.95:0,source:"NOPEUS"},
-    mic:{rpm:micRpm,conf:micConf,source:"MIKROFONI"}
-  };
-  const order=[primary,...["speed","mic"].filter(x=>x!==primary)];
-  for(const k of order){
-    const v=vals[k];
-    if(v&&isFinite(v.rpm)&&v.rpm>0&&v.conf>=.12)return v;
-  }
-  return {rpm:speedRpm||0,conf:rpmPerKmh>0?.5:0,source:"NOPEUS"};
+function score(f0){
+ const w=[0,.7,1,.95,.82,.65,.48];let s=0,p=0,v=[];
+ for(let h=1;h<=6;h++){let f=f0*h,d=f<=1800?dbAt(f):-120;v.push(d);let q=Math.max(0,Math.min(1,(d+90)/70));s+=q*w[h];if(d>-65)p++}
+ return {s:s+Math.min(.9,p*.15),p,v}
 }
-function updateLive(kmh){
-  const now=performance.now(),v=kmh/3.6,dt=lastT?(now-lastT)/1000:0;
-  let gpsA=dt>.15?(v-lastV)/dt:0;lastV=v;lastT=now;
-  const imuDelta=imuA-lastImu;lastImu=imuA;
-  let fused=isFinite(gpsA)?gpsA:0;
-  if(dt>0&&isFinite(imuDelta))fused=.88*fused+.12*(imuDelta/Math.max(.05,dt));
-  filtA=.78*filtA+.22*fused;
+function estimate(){
+ an.getFloatFrequencyData(freq);let lo=Math.max(500,+E.min.value||1500),hi=Math.max(lo+500,+E.max.value||15000),ppr=Math.max(.25,+E.ppr.value||1);
+ let f1=lo*ppr/60,f2=hi*ppr/60,best={s:-1,f0:0,p:0,v:[]};
+ for(let f=f1;f<=f2;f+=.75){let r=score(f);if(r.s>best.s)best={...r,f0:f}}
+ let raw=best.f0*60/ppr;
+ raw*=calFactor;
+ if(last){let c=[raw,raw/2,raw*2].filter(x=>x>=lo&&x<=hi),near=raw;c.forEach(x=>{if(Math.abs(x-last)<Math.abs(near-last))near=x});if(Math.abs(near-last)<Math.abs(raw-last)*.55)raw=near}
+ let d=last?Math.abs(raw-last):9999;if(d<Math.max(180,last*.035))stable++;else stable=Math.max(0,stable-2);
+ let conf=Math.round(100*(.55*Math.max(0,Math.min(1,(best.s-.8)/2.6))+.25*Math.min(1,best.p/4)+.20*Math.min(1,stable/12)));
+ let a=conf>75?.34:conf>50?.22:.10;smooth=smooth?smooth+a*(raw-smooth):raw;last=raw;
+ 
+ if(calActive && performance.now() < calEnd){
+   if(conf >= 45 && raw > 300){
+     calSamples.push(raw);
+   }
+ } else if(calActive){
+   calActive=false;
+   if(calSamples.length >= 5){
+     const sorted=[...calSamples].sort((a,b)=>a-b);
+     const measured=sorted[Math.floor(sorted.length/2)];
+     const target=+E.calRpm.value;
+     if(measured>0){
+       calFactor*=target/measured;
+       localStorage.setItem('vanaAirpodCalFactor', String(calFactor));
+       E.calStatus.value=`Kalibroitu ${target} RPM • kerroin ${calFactor.toFixed(4)}`;
+       E.status.textContent=`Kalibrointi valmis: mitattu mediaani ${Math.round(measured)} RPM → ${target} RPM`;
+     }
+   }else{
+     E.calStatus.value='Kalibrointi epäonnistui';
+     E.status.textContent='Kalibrointi epäonnistui: signaali/confidence liian heikko.';
+   }
+   calSamples=[];
+ }
+ return {rpm:Math.round(smooth/10)*10,conf,best}
 
-  const speedRpm=kmh*rpmPerKmh,p=chooseRpm(speedRpm),rpm=p.rpm;
-  const mass=+$("mass").value||190;
-  const watts=Math.max(0,mass*filtA*v),hp=watts/735.49875,nm=rpm>200?watts/(rpm*2*Math.PI/60):0,g=filtA/9.80665;
-
-  $("rpmMain").textContent=Math.round(rpm); $("rpmSourceMain").textContent=p.source;
-  $("speedMain").textContent=kmh.toFixed(0);
-  $("hpMain").textContent=hp.toFixed(1);
-  $("nmMain").textContent=nm.toFixed(1);
-  $("gMain").textContent=g.toFixed(2);
-  const deg=-25+(rpm/12000)*125;$("needle").style.transform=`rotate(${Math.max(-25,Math.min(100,deg))}deg)`;
-
-  const sample={t:Date.now(),kmh,rpm,hp,nm,g,a:filtA,source:p.source};
-  prebuffer.push(sample);while(prebuffer.length&&sample.t-prebuffer[0].t>5000)prebuffer.shift();
-
-  if(armed&&!recording&&rpm>=(+$("recordFrom").value||1500)&&filtA>.15){
-    recording=true;run=prebuffer.slice();setStatus("AUTO VETO KÄYNNISSÄ");$("armState").textContent="VETO";
-  }
-  if(recording){
-    run.push(sample);
-    if(filtA<=.03){if(!accelEndedAt)accelEndedAt=sample.t}else accelEndedAt=0;
-    const stopR=+$("stopRpm").value||10500,delay=(+$("stopDelay").value||.7)*1000;
-    if(rpm>=stopR||(accelEndedAt&&sample.t-accelEndedAt>=delay))finishRun("Automaattinen lopetus");
-  }
 }
-function motionHandler(e){
-  motionCount++;
-  const now=performance.now();
-  if(lastMotionStamp){
-    const inst=1000/Math.max(1,now-lastMotionStamp);
-    motionHz=motionHz?motionHz*.85+inst*.15:inst;
-  }
-  lastMotionStamp=now;
-
-  let ax=0,ay=0,az=0;
-  if(e.acceleration){
-    ax=e.acceleration.x||0; ay=e.acceleration.y||0; az=e.acceleration.z||0;
-    imuA=Math.sqrt(ax*ax+ay*ay+az*az);
-  }else if(e.accelerationIncludingGravity){
-    ax=e.accelerationIncludingGravity.x||0; ay=e.accelerationIncludingGravity.y||0; az=e.accelerationIncludingGravity.z||0;
-    imuA=Math.abs(Math.sqrt(ax*ax+ay*ay+az*az)-9.80665);
-  }
-  $("motionCount").textContent=motionCount;
-  $("motionHz").textContent=motionHz.toFixed(1);
-  $("ax").textContent=ax.toFixed(2); $("ay").textContent=ay.toFixed(2); $("az").textContent=az.toFixed(2); $("amag").textContent=imuA.toFixed(2);
-
-  if(e.rotationRate){
-    $("gyroA").textContent=(e.rotationRate.alpha||0).toFixed(1);
-    $("gyroB").textContent=(e.rotationRate.beta||0).toFixed(1);
-    $("gyroG").textContent=(e.rotationRate.gamma||0).toFixed(1);
-  }
-  $("topImu").classList.add("on");
-  $("sensorHelp").textContent="IMU vastaanottaa dataa. Liikuta puhelinta: X/Y/Z ja gyroarvojen pitää muuttua.";
+function level(){
+ an.getFloatTimeDomainData(time);let s=0;for(const x of time)s+=x*x;let r=Math.sqrt(s/time.length);return r>1e-7?20*Math.log10(r):-120;
+}
+function draw(r){
+ const g=E.cv.getContext('2d'),W=E.cv.width,H=E.cv.height,bin=ac.sampleRate/an.fftSize;g.fillStyle='#090b0f';g.fillRect(0,0,W,H);g.beginPath();
+ for(let f=20,first=1;f<=1800;f+=3){let i=Math.round(f/bin),d=freq[i]??-120,n=Math.max(0,Math.min(1,(d+100)/80)),x=(f-20)/1780*W,y=H-10-n*(H-20);first?(g.moveTo(x,y),first=0):g.lineTo(x,y)}
+ g.strokeStyle='#ff3535';g.lineWidth=2;g.stroke();
+ for(let h=1;h<=6;h++){let f=r.best.f0*h;if(f>1800)continue;let x=(f-20)/1780*W;g.strokeStyle=h===1?'#38e18a':'#4ea1ff';g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke()}
+}
+function loop(){
+ if(!an)return;let r=estimate(),db=level();
+ if(calActive){const left=Math.max(0,(calEnd-performance.now())/1000);E.calStatus.value=`Kalibroidaan ${E.calRpm.value} RPM • ${left.toFixed(1)} s`;}E.rpm.textContent=r.rpm.toLocaleString('fi-FI');E.conf.textContent=r.conf+'%';E.fund.textContent=r.best.f0.toFixed(1)+' Hz';E.level.textContent=(db<=-119?'-∞':db.toFixed(1))+' dB';
+ let locked=r.conf>=65&&stable>=6;E.lock.textContent=locked?'RPM LOCKED':r.conf>=40?'HAETAAN LUKITUSTA':'EI LUKITUSTA';E.lock.style.color=locked?'#38e18a':'#ffb020';
+ E.harms.innerHTML='';for(let h=1;h<=6;h++){let f=r.best.f0*h,d=r.best.v[h-1],x=document.createElement('div');x.className='h';x.innerHTML='<b>H'+h+'</b><span>'+(f<=1800?f.toFixed(0)+' Hz · '+d.toFixed(0)+' dB':'—')+'</span>';E.harms.appendChild(x)}
+ draw(r);raf=requestAnimationFrame(loop)
 }
 
+E.start.onclick=start;
+E.stop.onclick=()=>{stop();E.status.textContent='Pysäytetty.'};
 
-function orientationHandler(e){
-  orientationState={alpha:e.alpha,beta:e.beta,gamma:e.gamma};
-  $("oriB").textContent=isFinite(e.beta)?e.beta.toFixed(1)+"°":"–";
-  $("oriG").textContent=isFinite(e.gamma)?e.gamma.toFixed(1)+"°":"–";
-}
-async function getGpsPermissionState(){
-  try{
-    if(navigator.permissions?.query){
-      const st=await navigator.permissions.query({name:"geolocation"});
-      $("gpsPerm").textContent=st.state;
-      st.onchange=()=>{$("gpsPerm").textContent=st.state;log("GPS permission changed: "+st.state)};
-      return st.state;
-    }
-  }catch(e){log("Permissions API geolocation: "+e.message)}
-  $("gpsPerm").textContent="tuntematon";
-  return "unknown";
+const savedCal=parseFloat(localStorage.getItem('vanaAirpodCalFactor')||'1');
+if(Number.isFinite(savedCal) && savedCal>0.25 && savedCal<4){
+  calFactor=savedCal;
+  if(Math.abs(calFactor-1)>0.0001) E.calStatus.value=`Tallennettu kerroin ${calFactor.toFixed(4)}`;
 }
 
-async function startSensors(){
-  log("Anturipainike painettu");
-  if(!window.isSecureContext){
-    setStatus("Anturit vaativat HTTPS-yhteyden. Avaa GitHub Pagesin https://-osoite.");
+E.calibrate.onclick=()=>{
+  if(!an){
+    E.status.textContent='Käynnistä mikrofoni ennen kalibrointia.';
     return;
   }
-  try{
-    if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
-      const perm=await DeviceMotionEvent.requestPermission();
-      log("Motion permission: "+perm);
-      if(perm!=="granted")throw new Error("Liikeanturilupaa ei myönnetty");
-    }
-    if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
-      const perm2=await DeviceOrientationEvent.requestPermission();
-      log("Orientation permission: "+perm2);
-      if(perm2!=="granted")throw new Error("Suunta-anturilupaa ei myönnetty");
-    }
-
-    if(!motionBound){window.addEventListener("devicemotion",motionHandler,{passive:true});motionBound=true}
-    if(!orientationBound){window.addEventListener("deviceorientation",orientationHandler,{passive:true});orientationBound=true}
-    setActive("sensorBtn",true,"sensorState");
-    setStatus("Anturiluvat OK. Odotetaan motion/orientation-dataa…");
-
-    setTimeout(()=>{
-      if(motionCount===0){
-        $("sensorHelp").textContent="Liikeanturista ei tullut yhtään eventtiä 3 sekunnissa. Tarkista Safarin sivustolupa ja yritä ANTURIT-painiketta uudelleen.";
-        log("VAROITUS: 0 devicemotion eventtiä 3 sekunnissa.");
-      }
-    },3000);
-  }catch(e){
-    setStatus("Liike-/suunta-anturit: "+e.message);
-    $("sensorHelp").textContent="Anturilupa epäonnistui: "+e.message;
-  }
-
-  await getGpsPermissionState();
-  if(!("geolocation" in navigator)){
-    setStatus("GPS API ei ole käytettävissä.");
-    return;
-  }
-  if(gpsWatch!==null){
-    log("GPS on jo käynnissä");
-    return;
-  }
-  try{
-    gpsWatch=navigator.geolocation.watchPosition(
-      p=>{
-        gpsCount++;
-        const raw=p.coords.speed;
-        const kmh=Math.max(0,(isFinite(raw)?raw:0)*3.6);
-        $("gpsSpeedLive").textContent=kmh.toFixed(1)+" km/h";
-        $("gpsPos").textContent=`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;
-        $("gpsAccLive").textContent=isFinite(p.coords.accuracy)?p.coords.accuracy.toFixed(0)+" m":"–";
-        $("gpsCount").textContent=gpsCount; $("gpsPerm").textContent="granted";
-        $("topGps").classList.add("on");
-        updateLive(kmh);
-        setActive("sensorBtn",true,"sensorState");
-        if(motionCount>0)setStatus("GPS + IMU + orientaatio käytössä.");
-        else setStatus("GPS toimii. Odotetaan vielä IMU-dataa.");
-      },
-      e=>{
-        if(e.code===1)$("gpsPerm").textContent="denied";
-        setStatus(`GPS virhe ${e.code}: ${e.message}`);
-        log(`GPS virhe ${e.code}: ${e.message}`);
-      },
-      {enableHighAccuracy:true,maximumAge:0,timeout:15000}
-    );
-  }catch(e){
-    setStatus("GPS käynnistys epäonnistui: "+e.message);
-  }
-}
-
-function estimatePitch(buf,sr){
-  let rms=0,mean=0;
-  for(let i=0;i<buf.length;i++)mean+=buf[i];
-  mean/=buf.length;
-  for(let i=0;i<buf.length;i++){const v=buf[i]-mean;rms+=v*v}
-  rms=Math.sqrt(rms/buf.length);
-  if(rms<.006)return {rpm:NaN,conf:0};
-
-  const minR=+$("micMin")?.value||1200;
-  const maxR=+$("micMax")?.value||12000;
-  const minLag=Math.max(2,Math.floor(sr/(maxR/60)));
-  const maxLag=Math.min(buf.length-2,Math.ceil(sr/(minR/60)));
-
-  let best=-1,bestLag=0;
-  for(let lag=minLag;lag<=maxLag;lag++){
-    let c=0,e1=0,e2=0;
-    for(let i=0;i<buf.length-lag;i++){
-      const a=buf[i]-mean,b=buf[i+lag]-mean;
-      c+=a*b;e1+=a*a;e2+=b*b;
-    }
-    const n=c/Math.sqrt(Math.max(1e-12,e1*e2));
-    if(n>best){best=n;bestLag=lag}
-  }
-  if(bestLag<=0||best<.12)return {rpm:NaN,conf:Math.max(0,best)};
-
-  let rpm=sr/bestLag*60;
-
-  // Help reject common octave errors using speed RPM when calibrated.
-  const speedRpm=(Number($("speedMain").textContent)||0)*rpmPerKmh;
-  if(speedRpm>1000){
-    const candidates=[rpm/2,rpm,rpm*2].filter(v=>v>=minR&&v<=maxR);
-    if(candidates.length)rpm=candidates.reduce((a,b)=>Math.abs(b-speedRpm)<Math.abs(a-speedRpm)?b:a);
-  }
-  return {rpm,conf:Math.min(1,best)};
-}
-async function startMic(){
-  log("Mikrofonipainike painettu");
-  if(!window.isSecureContext){setStatus("Mikrofoni vaatii HTTPS-yhteyden.");return}
-  if(!navigator.mediaDevices?.getUserMedia){setStatus("Media API ei ole käytettävissä.");return}
-  try{
-    const st=await navigator.mediaDevices.getUserMedia({
-      audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1},
-      video:false
-    });
-    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state==="suspended")await audioCtx.resume();
-    $("audioState").textContent=audioCtx.state;
-    audioCtx.onstatechange=()=>{$("audioState").textContent=audioCtx.state;log("AudioContext: "+audioCtx.state)};
-
-    const src=audioCtx.createMediaStreamSource(st);
-    analyser=audioCtx.createAnalyser();
-    analyser.fftSize=8192;
-    analyser.smoothingTimeConstant=.05;
-    src.connect(analyser);
-    audioBuf=new Float32Array(analyser.fftSize);
-
-    clearInterval(audioTimer);
-    audioTimer=setInterval(()=>{
-      analyser.getFloatTimeDomainData(audioBuf);
-      const r=estimatePitch(audioBuf,audioCtx.sampleRate);
-      micRpm=r.rpm;micConf=r.conf;
-      $("micRpmLive").textContent=isFinite(micRpm)?Math.round(micRpm)+" rpm":"–";
-      $("micConfLive").textContent=Math.round((micConf||0)*100)+"%";
-      if(isFinite(micRpm)&&micConf>=.12)$("topMic").classList.add("on");
-    },100);
-
-    setActive("micBtn",true,"micState");
-    $("topMic").classList.add("on");
-    setStatus("Mikrofoni käynnissä. Katso LIVE ANTURIT → Mic RPM / luottamus.");
-  }catch(e){
-    $("audioState").textContent="virhe";
-    setStatus("Mikrofoni: "+e.message);
-  }
-}
-function finishRun(reason){
-  if(!recording){setStatus("Ei käynnissä olevaa vetoa.");return}
-  recording=false;armed=false;
-  setActive("armBtn",false,"armState","AKTIIVINEN","VALMIS");
-  setActive("manualBtn",false,"manualState","KÄYNNISSÄ","VALMIS");
-  try{
-    const runs=JSON.parse(localStorage.getItem("vanaV14runs")||"[]");
-    runs.unshift({date:new Date().toISOString(),gear:$("gear").value,ratio:rpmPerKmh,data:run});
-    localStorage.setItem("vanaV14runs",JSON.stringify(runs.slice(0,10)));localStorage.setItem("vanaV16runs",JSON.stringify(runs.slice(0,10)));localStorage.setItem("vanaV16runs",JSON.stringify(runs.slice(0,10)));
-  }catch(e){log("Tallennusvirhe: "+e.message)}
-  setStatus(reason+" • veto tallennettu • "+run.length+" näytettä");
-}
-
-$("sensorBtn").addEventListener("click",startSensors);
-$("micBtn").addEventListener("click",startMic);
-$("armBtn").addEventListener("click",()=>{
-  armed=true;recording=false;run=[];prebuffer=[];accelEndedAt=0;
-  setActive("armBtn",true,"armState");setStatus("ARMED • odottaa "+$("recordFrom").value+" rpm ja kiihtyvyyttä");
-});
-$("manualBtn").addEventListener("click",()=>{
-  armed=false;recording=true;run=[];setActive("manualBtn",true,"manualState","KÄYNNISSÄ","VALMIS");setStatus("Manuaalinen veto käynnissä");
-});
-$("stopBtn").addEventListener("click",()=>finishRun("STOP"));
-$("calBtn").onclick=()=>{
-  const spd=+$("calSpeed").value,rpm=+$("calRpm").value;
-  if(!(spd>0&&rpm>0)){setStatus("Tarkista kalibrointinopeus ja RPM.");return}
-  rpmPerKmh=rpm/spd;
-  try{localStorage.setItem("vanaV14ratio",rpmPerKmh)}catch{}
-  setStatus("RPM kalibroitu: "+rpmPerKmh.toFixed(2)+" rpm/km/h");
+  const target=+E.calRpm.value;
+  calSamples=[];
+  calActive=true;
+  calEnd=performance.now()+4000;
+  E.calStatus.value=`Kalibroidaan ${target} RPM...`;
+  E.status.textContent=`Pidä moottori tasaisesti ${target} RPM:ssä 4 sekuntia.`;
 };
 
-$("selfTestBtn").onclick=()=>{
-  updateDiag();
-  log("Secure context: "+window.isSecureContext);
-  log("Sivun osoite: "+location.href);
-  log("Geolocation: "+("geolocation" in navigator));
-  log("DeviceMotionEvent: "+(typeof DeviceMotionEvent!=="undefined"));
-  log("DeviceOrientationEvent: "+(typeof DeviceOrientationEvent!=="undefined"));
-  log("getUserMedia: "+!!navigator.mediaDevices?.getUserMedia);
-  getGpsPermissionState();
-  if(audioCtx)log("AudioContext state: "+audioCtx.state);
-  log("RPM ratio: "+rpmPerKmh.toFixed(2));
-  setStatus(window.isSecureContext?"Järjestelmätesti valmis.":"Sivu ei ole secure contextissa — anturit/media voivat olla estetty.");
+E.clearCal.onclick=()=>{
+  calFactor=1;
+  localStorage.removeItem('vanaAirpodCalFactor');
+  E.calStatus.value='Ei kalibroitu';
+  E.status.textContent='RPM-kalibrointi tyhjennetty.';
+  last=0;smooth=0;stable=0;
 };
 
+navigator.mediaDevices?.addEventListener?.('devicechange',devices);
+devices();
 
-function getRuns(){
-  try{return JSON.parse(localStorage.getItem("vanaV16runs")||localStorage.getItem("vanaV16runs")||localStorage.getItem("vanaV14runs")||"[]")}catch{return []}
-}
-function renderRunsScreen(){
-  const runs=getRuns();
-  $("runsList").innerHTML=runs.length
-    ? runs.map((r,i)=>{
-        const hp=r.data?.length?Math.max(...r.data.map(x=>Number(x.hp)||0)):0;
-        const nm=r.data?.length?Math.max(...r.data.map(x=>Number(x.nm)||0)):0;
-        return `<div class="runItem"><b>Veto ${runs.length-i}</b><br>${new Date(r.date).toLocaleString("fi-FI")} • ${r.gear}. vaihde • ${r.data?.length||0} näytettä<br>${hp.toFixed(1)} hv • ${nm.toFixed(1)} Nm</div>`;
-      }).join("")
-    : '<div class="statusBox">Ei tallennettuja vetoja.</div>';
-}
-function renderAnalysis(){
-  const runs=getRuns(),r=runs[0];
-  if(!r?.data?.length){
-    $("analysisLatest").textContent="Ei vetoja";$("analysisHp").textContent="–";$("analysisNm").textContent="–";$("analysisRpm").textContent="–";
-    $("analysisText").textContent="Tallenna vähintään yksi veto analyysiä varten.";return;
-  }
-  const hp=Math.max(...r.data.map(x=>Number(x.hp)||0)),nm=Math.max(...r.data.map(x=>Number(x.nm)||0));
-  const rpms=r.data.map(x=>Number(x.rpm)||0).filter(x=>x>0);
-  $("analysisLatest").textContent=new Date(r.date).toLocaleString("fi-FI");
-  $("analysisHp").textContent=hp.toFixed(1)+" hv";
-  $("analysisNm").textContent=nm.toFixed(1)+" Nm";
-  $("analysisRpm").textContent=rpms.length?`${Math.min(...rpms).toFixed(0)}–${Math.max(...rpms).toFixed(0)} rpm`:"–";
-  $("analysisText").textContent=`Veto sisältää ${r.data.length} näytettä. Vertaa saman vaihteen ja saman tien vetoja keskenään.`;
-}
-function drawCompare(){
-  const runs=getRuns().slice(0,5),c=$("compareChart"),ctx=c.getContext("2d"),w=c.width,h=c.height;
-  ctx.clearRect(0,0,w,h);ctx.strokeStyle="rgba(255,255,255,.08)";
-  for(let i=1;i<6;i++){ctx.beginPath();ctx.moveTo(0,h*i/6);ctx.lineTo(w,h*i/6);ctx.stroke()}
-  if(!runs.length)return;
-  const all=runs.flatMap(r=>r.data||[]).filter(x=>(Number(x.rpm)||0)>0);
-  if(!all.length)return;
-  const minR=Math.min(...all.map(x=>Number(x.rpm))),maxR=Math.max(...all.map(x=>Number(x.rpm))),maxHp=Math.max(1,...all.map(x=>Number(x.hp)||0));
-  const colors=["#ff233f","#ff8a1a","#ffc72d","#39f061","#3aa7ff"];
-  runs.forEach((r,j)=>{
-    ctx.strokeStyle=colors[j];ctx.lineWidth=2.5;ctx.beginPath();let first=true;
-    (r.data||[]).forEach(d=>{
-      const rpm=Number(d.rpm)||0;if(rpm<=0)return;
-      const px=(rpm-minR)/Math.max(1,maxR-minR)*w,py=h-(Number(d.hp)||0)/maxHp*(h-12);
-      if(first){ctx.moveTo(px,py);first=false}else ctx.lineTo(px,py);
-    });ctx.stroke();
-  });
-}
-function avgHpAt(data,rpm,band=150){
-  const a=(data||[]).filter(d=>Math.abs((Number(d.rpm)||0)-rpm)<=band);
-  return a.length?a.reduce((s,d)=>s+(Number(d.hp)||0),0)/a.length:NaN;
-}
-function makeTune(){
-  const runs=getRuns();if(runs.length<2){$("tuneResult").textContent="Tarvitaan vähintään kaksi vertailuvetoa.";return}
-  const from=+$("analyzeFrom2").value||4000,step=+$("rpmStep2").value||500,maxStep=Math.abs(+$("maxStep2").value||.5);
-  const stop=+$("stopRpm").value||10500,out=[];
-  for(let r=from;r<=stop;r+=step){
-    const n=avgHpAt(runs[0].data,r),p=avgHpAt(runs[1].data,r);
-    if(!isFinite(n)||!isFinite(p)||p<=0)continue;
-    const gain=(n-p)/p*100,sug=Math.abs(gain)<1?0:(gain>0?maxStep:-maxStep);
-    out.push(`${r}: ${sug>0?"+":""}${sug.toFixed(1)}°`);
-  }
-  $("tuneResult").textContent=out.length?`Seuraavan testikartan ehdotus (${ $("ecu2").value }): `+out.join(" • "):"Vertailukelpoista dataa ei löytynyt.";
-}
-function syncSettingsToForm(){
-  $("settingsMass").value=$("mass").value;
-  $("settingsGear").value=$("gear").value;
-  $("settingsRecord").value=$("recordFrom").value;
-  $("settingsStop").value=$("stopRpm").value;
-  $("settingsDelay").value=$("stopDelay").value;
-  $("settingsP1").value=$("rpmP1").value;
-  $("settingsMicMin").value=$("micMin").value;
-  $("settingsMicMax").value=$("micMax").value;
-}
-function saveSettings(){
-  $("mass").value=$("settingsMass").value;
-  $("gear").value=$("settingsGear").value;
-  $("recordFrom").value=$("settingsRecord").value;
-  $("stopRpm").value=$("settingsStop").value;
-  $("stopDelay").value=$("settingsDelay").value;
-  $("rpmP1").value=$("settingsP1").value;
-  $("micMin").value=$("settingsMicMin").value;
-  $("micMax").value=$("settingsMicMax").value;
-  try{localStorage.setItem("vanaV16settings",JSON.stringify({
-    mass:$("mass").value,
-    gear:$("gear").value,
-    recordFrom:$("recordFrom").value,
-    stopRpm:$("stopRpm").value,
-    stopDelay:$("stopDelay").value,
-    rpmP1:$("rpmP1").value,
-    micMin:$("micMin").value,
-    micMax:$("micMax").value,
-    infoButtons:!document.body.classList.contains("info-off")
-  }))}catch{}
-  $("settingsStatus").textContent="Asetukset tallennettu.";
-}
-function applyInfoSetting(on){
-  document.body.classList.toggle("info-off",!on);
-  const btn=$("infoToggleBtn");
-  if(btn){
-    btn.classList.toggle("on",on);
-    btn.setAttribute("aria-label",on?"Info-napit päällä":"Info-napit pois");
-  }
-}
-function loadSettings(){
-  try{
-    const o=JSON.parse(localStorage.getItem("vanaV16settings")||localStorage.getItem("vanaV16settings")||"null");
-    if(o){
-      for(const [id,key] of [["mass","mass"],["gear","gear"],["recordFrom","recordFrom"],["stopRpm","stopRpm"],["stopDelay","stopDelay"],["rpmP1","rpmP1"],["micMin","micMin"],["micMax","micMax"]]){
-        if(o[key]!=null&&$(id))$(id).value=o[key];
-      }
-      applyInfoSetting(o.infoButtons!==false);
-    }else{
-      applyInfoSetting(true);
-    }
-  }catch{
-    applyInfoSetting(true);
-  }
-}
-function switchScreen(name){
-  document.querySelectorAll(".screen").forEach(el=>el.classList.remove("active"));
-  document.querySelectorAll(".bottom .nav").forEach(el=>el.classList.remove("active"));
-  const screen=$("screen-"+name);if(screen)screen.classList.add("active");
-  const nav=document.querySelector(`.bottom .nav[data-screen="${name}"]`);if(nav)nav.classList.add("active");
-  if(name==="runs"){renderRunsScreen();drawCompare()}
-  if(name==="analysis")renderAnalysis();
-  if(name==="settings")syncSettingsToForm();
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-document.querySelectorAll(".bottom .nav[data-screen]").forEach(btn=>btn.addEventListener("click",()=>switchScreen(btn.dataset.screen)));
-$("compareRunsBtn").addEventListener("click",drawCompare);
-$("clearRunsBtn").addEventListener("click",()=>{localStorage.removeItem("vanaV14runs");localStorage.removeItem("vanaV16runs");localStorage.removeItem("vanaV16runs");renderRunsScreen();drawCompare();renderAnalysis()});
-$("tuneSuggestBtn").addEventListener("click",makeTune);
-$("saveSettingsBtn").addEventListener("click",saveSettings);
-$("infoToggleBtn").addEventListener("click",()=>{
-  const next=document.body.classList.contains("info-off");
-  applyInfoSetting(next);
-  try{
-    const old=JSON.parse(localStorage.getItem("vanaV16settings")||"{}");
-    old.infoButtons=next;
-    localStorage.setItem("vanaV16settings",JSON.stringify(old));
-  }catch{}
-});
-
-$("settingsP1").addEventListener("change",()=>{
-  $("rpmP1").value=$("settingsP1").value;
-  $("rpmSourceMain").textContent=$("settingsP1").value==="mic"?"MIKROFONI":"NOPEUS";
-  $("settingsStatus").textContent="RPM-prioriteetti päivitetty heti: "+($("settingsP1").value==="mic"?"Mikrofoni":"Nopeus");
-});
-$("settingsMicMin").addEventListener("change",()=>{$("micMin").value=$("settingsMicMin").value});
-$("settingsMicMax").addEventListener("change",()=>{$("micMax").value=$("settingsMicMax").value});
-
-loadSettings();
-renderRunsScreen();
-renderAnalysis();
-
-</script>
-</body>
-</html>
+</script></body></html>
