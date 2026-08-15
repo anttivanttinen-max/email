@@ -1,192 +1,405 @@
 <!doctype html>
 <html lang="fi">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>VÄNÄ MotoLab – AirPod RPM Tester</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07090d">
+<title>VÄNÄ MotoLab – Solo RPM & Knock Tester v1</title>
 <style>
-body{margin:0;background:#08090c;color:#f5f7fa;font-family:system-ui,-apple-system,sans-serif}
-.wrap{max-width:900px;margin:auto;padding:16px}.card{background:#151820;border:1px solid #2c323d;border-radius:18px;padding:14px;margin-bottom:12px}
-h1{font-size:22px;margin:0 0 12px}.red{color:#ff3535}.rpm{text-align:center;font-size:72px;font-weight:900;letter-spacing:-4px}.unit{font-size:16px;color:#9ca7b5}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.box{background:#0c0f14;border-radius:12px;padding:10px;text-align:center}.box b{font-size:20px}.box span{display:block;color:#9ca7b5;font-size:10px}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}select,input,button{width:100%;padding:11px;border-radius:10px;border:1px solid #37404c;background:#0d1015;color:white}
-button{font-weight:800}.start{background:#d91d1d}.wide{grid-column:1/-1}.status{font-size:12px;color:#b7c0cc}
-canvas{width:100%;height:230px;background:#090b0f;border-radius:12px}.harms{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
-.h{background:#0c0f14;border-radius:9px;padding:7px;text-align:center;font-size:11px}.h span{display:block;color:#9ca7b5;font-size:9px}
-@media(max-width:650px){.rpm{font-size:58px}.grid{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}.wide{grid-column:auto}.harms{grid-template-columns:repeat(3,1fr)}}
+:root{
+ --bg:#06070a;--panel:#11161e;--panel2:#0b0f14;--line:#2b3440;--txt:#f5f7fa;--muted:#9aa6b5;
+ --red:#ff3b3b;--green:#35df8b;--amber:#ffb020;--blue:#4d9fff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% -15%,#252d38 0,#0b0e13 36%,#050608 78%);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.wrap{max-width:1000px;margin:auto;padding:12px 12px 80px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 2px 12px}
+.brand{font-size:20px;font-weight:950;letter-spacing:.07em}.brand b{color:var(--red)}
+.sub{font-size:10px;color:var(--muted);letter-spacing:.08em}
+.pill{border:1px solid #603232;background:#261415;color:#ff9c9c;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:900}
+.card{background:linear-gradient(180deg,rgba(20,25,33,.98),rgba(11,14,19,.98));border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 12px 35px rgba(0,0,0,.25)}
+.k{font-size:10px;color:var(--muted);letter-spacing:.11em;font-weight:900;margin-bottom:8px}
+.hero{text-align:center;padding:18px}
+.step{font-size:12px;color:#c5ced8;font-weight:900;letter-spacing:.08em}
+.target{font-size:clamp(42px,10vw,82px);font-weight:950;line-height:1;letter-spacing:-.04em;margin:8px 0}
+.place{font-size:22px;font-weight:900;margin:4px 0 10px}
+.instruction{font-size:15px;line-height:1.45;color:#d8e0e8;max-width:720px;margin:0 auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:720px){.grid2{grid-template-columns:1fr}.grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.grid3{grid-template-columns:1fr 1fr}}
+.metric{background:#090d12;border:1px solid #26303a;border-radius:13px;padding:10px;text-align:center}
+.metric b{font-size:21px}.metric span{display:block;color:var(--muted);font-size:9px;letter-spacing:.07em;margin-top:2px}
+button,input,select,textarea{width:100%;border:1px solid #35404c;background:#0b1016;color:#fff;border-radius:12px;padding:11px;font-size:14px}
+button{font-weight:900;cursor:pointer}
+.primary{background:linear-gradient(#ff4747,#bd1414);border-color:#ff5959}
+.good{background:#123723;border-color:#287d50}
+.warn{background:#3a2810;border-color:#81581f}
+.ghost{background:#0b1016}
+.bigBtns{display:grid;grid-template-columns:2fr 1fr;gap:8px}
+@media(max-width:520px){.bigBtns{grid-template-columns:1fr}}
+.progress{height:10px;border-radius:999px;background:#070a0e;border:1px solid #27313c;overflow:hidden}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,#ff3b3b,#ffb020,#35df8b)}
+.status{font-size:12px;line-height:1.5;color:#b9c5d1}
+label{display:block;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.07em;margin:5px 0 4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th,td{border-bottom:1px solid #26303a;padding:7px;text-align:left}
+th{color:#9dacbb;font-size:9px;letter-spacing:.07em}
+.ok{color:var(--green)}.mid{color:var(--amber)}.bad{color:#ff6565}
+.hidden{display:none!important}
+canvas{width:100%;height:190px;background:#070a0e;border:1px solid #26303a;border-radius:14px;display:block}
+.note{font-size:11px;color:#8e9ba9}
+.sticky{position:sticky;bottom:8px;z-index:10}
+.sticky .card{backdrop-filter:blur(10px);background:rgba(12,15,20,.94)}
+.checkrow{display:flex;align-items:center;gap:8px;margin:6px 0}.checkrow input{width:auto}
+.small{font-size:11px;padding:9px}
 </style>
 </head>
-<body><div class="wrap">
-<h1>VÄNÄ <span class="red">MOTOLAB</span> – AIRPOD RPM TESTER</h1>
+<body>
+<div class="wrap">
+<header>
+ <div><div class="brand">VÄNÄ <b>MOTOLAB</b></div><div class="sub">SOLO RPM & KNOCK TESTER v1</div></div>
+ <div class="pill">YKSIN KÄYTETTÄVÄ</div>
+</header>
 
-<div class="card">
-<div class="rpm"><span id="rpm">0</span> <span class="unit">RPM</span></div>
-<div id="lock" style="text-align:center;color:#ffb020;font-weight:800">EI LUKITUSTA</div>
-<div class="grid" style="margin-top:12px">
-<div class="box"><b id="conf">0%</b><span>CONFIDENCE</span></div>
-<div class="box"><b id="fund">0 Hz</b><span>PERUSTAAJUUS</span></div>
-<div class="box"><b id="level">-∞ dB</b><span>MIC LEVEL</span></div>
-</div>
-</div>
-
-<div class="card controls">
-<div><label>Mikrofoni</label><select id="device"><option value="">Oletusmikrofoni</option></select></div>
-<div><label>Pulssit / kierros</label><input id="ppr" type="number" step=".25" value="1"></div>
-<div><label>Min RPM</label><input id="min" type="number" value="1500"></div>
-<div><label>Max RPM</label><input id="max" type="number" value="15000"></div>
-<button id="start" class="start">KÄYNNISTÄ MIKROFONI</button><button id="stop">PYSÄYTÄ</button>
-<div class="wide status" id="status">Yhdistä AirPod ensin puhelimeen. HTTPS suositeltu/vaadittu mikrofonille.</div>
-</div>
-
-
-<div class="card">
-  <h2 style="font-size:16px;margin:0 0 10px">RPM-KALIBROINTI</h2>
-  <div class="status" style="margin-bottom:10px">
-    Pidä moottori tasaisesti tunnetussa kierrosluvussa ja paina kalibrointia.
-    Sovellus oppii juuri tämän mikrofonin/moottorin harmonisen suhteen.
+<section class="card">
+ <div class="k">1 · TESTISARJAN ASETUKSET</div>
+ <div class="grid2">
+  <div>
+   <label>Moottori / projekti</label><input id="project" value="DT testimoottori">
+   <label>RPM-pisteet, pilkulla</label><input id="targets" value="idle,3000,5000,7000,9000">
+   <label>Kalibrointipaikka</label><input id="calPlace" value="Paisarin loppu / stingerin alku">
   </div>
-  <div class="controls">
-    <div>
-      <label>Kalibrointikierrosluku</label>
-      <select id="calRpm">
-        <option value="3000">3000 RPM</option>
-        <option value="5000" selected>5000 RPM</option>
-        <option value="7000">7000 RPM</option>
-      </select>
-    </div>
-    <div>
-      <label>Kalibroinnin tila</label>
-      <input id="calStatus" value="Ei kalibroitu" readonly>
-    </div>
-    <button id="calibrate" class="start wide">KALIBROI TÄSSÄ RPM:SSÄ</button>
-    <button id="clearCal" class="wide">TYHJENNÄ KALIBROINTI</button>
+  <div>
+   <label>Yhden mittauksen pituus (s)</label><input id="duration" type="number" value="10" min="3" max="60">
+   <label>Siirtymäaika paikan vaihtoon (s)</label><input id="moveDelay" type="number" value="8" min="0" max="60">
+   <label>Tyhjäkäynnin referenssi RPM</label><input id="idleRpm" type="number" value="1800" min="500" max="5000">
   </div>
-</div>
+ </div>
+ <div class="checkrow"><input type="checkbox" id="voice" checked><label for="voice" style="margin:0">Ääniohjaus: sovellus lukee seuraavan vaiheen ääneen</label></div>
+ <div class="checkrow"><input type="checkbox" id="autoAdvance" checked><label for="autoAdvance" style="margin:0">Automaattinen eteneminen mittauksen jälkeen</label></div>
+ <button id="editPlaces" class="ghost">MUOKKAA MITTAUSPAIKKOJA</button>
+ <div id="placesEditor" class="hidden" style="margin-top:8px">
+   <div id="placesList"></div>
+   <button id="addPlace" class="small">+ LISÄÄ PAIKKA</button>
+ </div>
+</section>
 
-<div class="card"><canvas id="cv" width="900" height="240"></canvas><div id="harms" class="harms"></div></div>
-<div class="card status">
-<b>Testi:</b> kiinnitä AirPod moottorin lähelle pehmeällä välikerroksella ja suojaa suoralta ilmavirralta. Testaa ensin paikallaan. Hyvä tulos: RPM seuraa kaasua tasaisesti ja confidence pysyy korkeana.
+<section class="card">
+ <div class="k">2 · MIKROFONI</div>
+ <div class="row">
+  <select id="mic"><option value="">Oletusmikrofoni</option></select>
+  <button id="startMic" class="primary">KÄYNNISTÄ MIKROFONI</button>
+ </div>
+ <div id="micStatus" class="status" style="margin-top:7px">Yhdistä AirPod / BT-mikrofoni ja käynnistä sitten mikrofoni.</div>
+</section>
+
+<section class="card hero">
+ <div id="stepText" class="step">VALMIS ALOITTAMAAN</div>
+ <div id="targetText" class="target">—</div>
+ <div id="placeText" class="place">—</div>
+ <div id="instruction" class="instruction">Aseta testisarja ja käynnistä mikrofoni.</div>
+ <div class="progress" style="margin-top:14px"><div id="overallFill"></div></div>
+ <div id="progressText" class="status" style="text-align:center;margin-top:6px">0 / 0</div>
+</section>
+
+<section class="card">
+ <div class="k">LIVE</div>
+ <div class="grid4">
+  <div class="metric"><b id="rpm">0</b><span>RPM</span></div>
+  <div class="metric"><b id="conf">0%</b><span>RPM CONF</span></div>
+  <div class="metric"><b id="level">-∞</b><span>MIC dB</span></div>
+  <div class="metric"><b id="hf">0%</b><span>HF / KNOCK*</span></div>
+ </div>
+ <canvas id="spec" width="900" height="190" style="margin-top:10px"></canvas>
+ <div class="note" style="margin-top:6px">*HF / Knock on kokeellinen värähtely-/korkeataajuusmittari, ei varma nakutustunnistus.</div>
+</section>
+
+<section id="calCard" class="card">
+ <div class="k">KALIBROINTI</div>
+ <div class="status">Jokainen RPM-alue alkaa kalibroinnilla pakoputken loppupäässä. Kalibroinnin jälkeen sama RPM-piste käydään kaikissa mittauspaikoissa ilman uutta kalibrointia.</div>
+ <div class="bigBtns" style="margin-top:10px">
+  <button id="startSession" class="primary">ALOITA TESTISARJA</button>
+  <button id="resumeSession" class="ghost">JATKA / PALAUTA</button>
+ </div>
+</section>
+
+<section class="card">
+ <div class="k">NYKYISEN TESTIN TIEDOT</div>
+ <div class="row">
+  <div><label>Letkun pituus mm</label><input id="tubeLen" type="number" placeholder="esim. 12"></div>
+  <div><label>Etäisyys mm</label><input id="distance" type="number" placeholder="esim. 500"></div>
+ </div>
+ <div class="row">
+  <div><label>Pinnapultti / kierrekoko</label><input id="stud" placeholder="M8 / M7"></div>
+  <div><label>Putken halkaisija mm</label><input id="pipeDia" type="number" placeholder="esim. 25"></div>
+ </div>
+ <label>Huomio</label><input id="note" placeholder="esim. kuuloke kädessä / suora kontakti">
+</section>
+
+<section class="card">
+ <div class="k">TULOKSET</div>
+ <div style="overflow:auto">
+ <table>
+  <thead><tr><th>RPM-alue</th><th>Paikka</th><th>Tila</th><th>RPM</th><th>Conf</th><th>HF</th><th>dB</th></tr></thead>
+  <tbody id="resultsBody"></tbody>
+ </table>
+ </div>
+ <div class="row" style="margin-top:10px">
+  <button id="exportJson">LATAA JSON</button>
+  <button id="exportCsv">LATAA CSV</button>
+ </div>
+</section>
+
+<div class="sticky">
+ <section class="card">
+  <div id="countdown" class="status" style="text-align:center;font-weight:900;margin-bottom:8px">Valmis.</div>
+  <div class="grid3">
+   <button id="measure" class="good">MITTAA</button>
+   <button id="skip" class="warn">OHITA</button>
+   <button id="back" class="ghost">← TAKAISIN</button>
+  </div>
+ </section>
 </div>
 </div>
 
 <script>
-const $=x=>document.getElementById(x), E={rpm:$('rpm'),conf:$('conf'),fund:$('fund'),level:$('level'),lock:$('lock'),dev:$('device'),ppr:$('ppr'),min:$('min'),max:$('max'),start:$('start'),stop:$('stop'),status:$('status'),cv:$('cv'),harms:$('harms'),calRpm:$('calRpm'),calStatus:$('calStatus'),calibrate:$('calibrate'),clearCal:$('clearCal')};
-let ac,an,st,freq,time,raf,last=0,smooth=0,stable=0;
-let calFactor=1, calActive=false, calSamples=[], calEnd=0;
+const $=x=>document.getElementById(x);
+const ui={project:$('project'),targets:$('targets'),calPlace:$('calPlace'),duration:$('duration'),moveDelay:$('moveDelay'),idleRpm:$('idleRpm'),voice:$('voice'),autoAdvance:$('autoAdvance'),
+editPlaces:$('editPlaces'),placesEditor:$('placesEditor'),placesList:$('placesList'),addPlace:$('addPlace'),mic:$('mic'),startMic:$('startMic'),micStatus:$('micStatus'),
+stepText:$('stepText'),targetText:$('targetText'),placeText:$('placeText'),instruction:$('instruction'),overallFill:$('overallFill'),progressText:$('progressText'),
+rpm:$('rpm'),conf:$('conf'),level:$('level'),hf:$('hf'),spec:$('spec'),startSession:$('startSession'),resumeSession:$('resumeSession'),
+tubeLen:$('tubeLen'),distance:$('distance'),stud:$('stud'),pipeDia:$('pipeDia'),note:$('note'),resultsBody:$('resultsBody'),
+exportJson:$('exportJson'),exportCsv:$('exportCsv'),countdown:$('countdown'),measure:$('measure'),skip:$('skip'),back:$('back')};
 
-async function devices(){
+let places=[
+ {name:'Paisarin loppu / stingerin alku',kind:'rpm_reference',enabled:true,instruction:'Pidä AirPod samalla tavalla kuin eilisessä toimivassa RPM-kalibroinnissa.'},
+ {name:'Vapaa mikrofoni 0,5 m pakoputkesta',kind:'free',enabled:true,instruction:'Pidä AirPod noin 0,5 m paisarin/stingerin suunnasta. Älä muuta kalibrointia.'},
+ {name:'Vapaa mikrofoni 0,5 m moottorista',kind:'free',enabled:true,instruction:'Pidä AirPod noin 0,5 m sylinterikannen/moottorin suunnasta.'},
+ {name:'Mikrofoni suoraan pinnapulttiin',kind:'contact',enabled:true,instruction:'Paina AirPodin mikrofonipää/varren alapää suoraan pinnapultin päähän vakaasti.'},
+ {name:'Pinnapultti + lyhyt jäykkä letku',kind:'knock',enabled:true,instruction:'Letku tiukasti pinnapulttiin ja AirPod tiukasti letkun toiseen päähän. Tämä on knock/stetoskooppivertailu, mutta RPM pitää lukea samalla.'},
+ {name:'Tulpan metalliosa',kind:'contact',enabled:true,instruction:'Pidä AirPod vakaasti sytytystulpan metalliosaa vasten.'},
+ {name:'Oma paikka',kind:'custom',enabled:false,instruction:'Käytä itse määriteltyä mittauspaikkaa.'}
+];
+
+let ac,an,stream,freq,time,raf=0,live={rpm:0,conf:0,db:-120,hf:0,f0:0,harm:[]},lastRaw=0,stable=0,smooth=0;
+let plan=[],idx=-1,results=[],calibrations={},measuring=false,samples=[],timer=null;
+
+function speak(t){ if(!ui.voice.checked||!('speechSynthesis'in window))return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='fi-FI'; u.rate=.95; speechSynthesis.speak(u); }
+function buzz(ms=120){ if(navigator.vibrate) navigator.vibrate(ms); }
+
+function renderPlaces(){
+ ui.placesList.innerHTML='';
+ places.forEach((p,i)=>{
+   const d=document.createElement('div');d.className='card';d.style.padding='9px';d.style.marginBottom='7px';
+   d.innerHTML=`<div class="row">
+    <div><label>Nimi</label><input data-i="${i}" data-k="name" value="${p.name.replace(/"/g,'&quot;')}"></div>
+    <div><label>Tyyppi</label><select data-i="${i}" data-k="kind">
+      ${['rpm_reference','free','contact','knock','custom'].map(k=>`<option ${p.kind===k?'selected':''}>${k}</option>`).join('')}
+    </select></div></div>
+    <div class="checkrow"><input type="checkbox" data-i="${i}" data-k="enabled" ${p.enabled?'checked':''}><span class="status">Käytössä</span></div>
+    <label>Ohje</label><input data-i="${i}" data-k="instruction" value="${p.instruction.replace(/"/g,'&quot;')}">`;
+   ui.placesList.appendChild(d);
+ });
+ ui.placesList.querySelectorAll('input,select').forEach(el=>el.onchange=()=>{
+   const i=+el.dataset.i,k=el.dataset.k;places[i][k]=(k==='enabled'?el.checked:el.value);saveState();
+ });
+}
+renderPlaces();
+ui.editPlaces.onclick=()=>ui.placesEditor.classList.toggle('hidden');
+ui.addPlace.onclick=()=>{places.push({name:'Uusi mittauspaikka',kind:'custom',enabled:true,instruction:'Aseta mikrofoni valittuun paikkaan.'});renderPlaces();};
+
+async function listMics(){
  try{
-  const ds=await navigator.mediaDevices.enumerateDevices(); const a=ds.filter(d=>d.kind==='audioinput');
-  let old=E.dev.value; E.dev.innerHTML='<option value="">Oletusmikrofoni</option>';
-  a.forEach((d,i)=>{let o=document.createElement('option');o.value=d.deviceId;o.textContent=d.label||('Mikrofoni '+(i+1));E.dev.appendChild(o)});
-  if([...E.dev.options].some(o=>o.value===old))E.dev.value=old;
- }catch{}
+ const ds=await navigator.mediaDevices.enumerateDevices(), ms=ds.filter(d=>d.kind==='audioinput'); const old=ui.mic.value;
+ ui.mic.innerHTML='<option value="">Oletusmikrofoni</option>';
+ ms.forEach((d,i)=>{const o=document.createElement('option');o.value=d.deviceId;o.textContent=d.label||`Mikrofoni ${i+1}`;ui.mic.appendChild(o)});
+ if([...ui.mic.options].some(o=>o.value===old))ui.mic.value=old;
+ }catch(e){}
 }
-function stop(){
- if(raf)cancelAnimationFrame(raf);raf=0;if(st)st.getTracks().forEach(t=>t.stop());st=null;if(ac)ac.close();ac=null;an=null;
-}
-async function start(){
+async function startMic(){
  try{
-  stop();
-  st=await navigator.mediaDevices.getUserMedia({audio:{deviceId:E.dev.value?{exact:E.dev.value}:undefined,echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}});
-  ac=new (AudioContext||webkitAudioContext)(); await ac.resume();
-  const s=ac.createMediaStreamSource(st);an=ac.createAnalyser();an.fftSize=8192;an.smoothingTimeConstant=.35;s.connect(an);
-  freq=new Float32Array(an.frequencyBinCount);time=new Float32Array(an.fftSize);await devices();
-  E.status.textContent='Käynnissä: '+(st.getAudioTracks()[0].label||'mikrofoni')+' / '+ac.sampleRate+' Hz';last=0;smooth=0;stable=0;loop();
- }catch(e){E.status.textContent='Mikrofoni ei käynnistynyt: '+e.message}
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  stream=await navigator.mediaDevices.getUserMedia({audio:{deviceId:ui.mic.value?{exact:ui.mic.value}:undefined,echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}});
+  ac=new (window.AudioContext||window.webkitAudioContext)();await ac.resume();
+  const src=ac.createMediaStreamSource(stream);an=ac.createAnalyser();an.fftSize=16384;an.smoothingTimeConstant=.18;src.connect(an);
+  freq=new Float32Array(an.frequencyBinCount);time=new Float32Array(an.fftSize);
+  await listMics();ui.micStatus.textContent='MIC ON: '+(stream.getAudioTracks()[0].label||'mikrofoni')+' · '+ac.sampleRate+' Hz';
+  loop();
+ }catch(e){ui.micStatus.textContent='Mikrofonivirhe: '+e.message;}
 }
+ui.startMic.onclick=startMic;listMics();
+
 function dbAt(hz){
- const b=Math.round(hz*an.fftSize/ac.sampleRate);if(b<1||b>=freq.length)return-120;let m=-120;
- for(let i=Math.max(1,b-2);i<=Math.min(freq.length-1,b+2);i++)m=Math.max(m,freq[i]);return m;
+ const b=Math.round(hz*an.fftSize/ac.sampleRate);if(b<1||b>=freq.length)return-120;
+ let m=-120;for(let i=Math.max(1,b-2);i<=Math.min(freq.length-1,b+2);i++)m=Math.max(m,freq[i]);return m;
 }
-function score(f0){
- const w=[0,.7,1,.95,.82,.65,.48];let s=0,p=0,v=[];
- for(let h=1;h<=6;h++){let f=f0*h,d=f<=1800?dbAt(f):-120;v.push(d);let q=Math.max(0,Math.min(1,(d+90)/70));s+=q*w[h];if(d>-65)p++}
- return {s:s+Math.min(.9,p*.15),p,v}
+function rmsDb(){
+ an.getFloatTimeDomainData(time);let s=0;for(const x of time)s+=x*x;const r=Math.sqrt(s/time.length);return r>1e-7?20*Math.log10(r):-120;
 }
-function estimate(){
- an.getFloatFrequencyData(freq);let lo=Math.max(500,+E.min.value||1500),hi=Math.max(lo+500,+E.max.value||15000),ppr=Math.max(.25,+E.ppr.value||1);
- let f1=lo*ppr/60,f2=hi*ppr/60,best={s:-1,f0:0,p:0,v:[]};
- for(let f=f1;f<=f2;f+=.75){let r=score(f);if(r.s>best.s)best={...r,f0:f}}
- let raw=best.f0*60/ppr;
- raw*=calFactor;
- if(last){let c=[raw,raw/2,raw*2].filter(x=>x>=lo&&x<=hi),near=raw;c.forEach(x=>{if(Math.abs(x-last)<Math.abs(near-last))near=x});if(Math.abs(near-last)<Math.abs(raw-last)*.55)raw=near}
- let d=last?Math.abs(raw-last):9999;if(d<Math.max(180,last*.035))stable++;else stable=Math.max(0,stable-2);
- let conf=Math.round(100*(.55*Math.max(0,Math.min(1,(best.s-.8)/2.6))+.25*Math.min(1,best.p/4)+.20*Math.min(1,stable/12)));
- let a=conf>75?.34:conf>50?.22:.10;smooth=smooth?smooth+a*(raw-smooth):raw;last=raw;
- 
- if(calActive && performance.now() < calEnd){
-   if(conf >= 45 && raw > 300){
-     calSamples.push(raw);
-   }
- } else if(calActive){
-   calActive=false;
-   if(calSamples.length >= 5){
-     const sorted=[...calSamples].sort((a,b)=>a-b);
-     const measured=sorted[Math.floor(sorted.length/2)];
-     const target=+E.calRpm.value;
-     if(measured>0){
-       calFactor*=target/measured;
-       localStorage.setItem('vanaAirpodCalFactor', String(calFactor));
-       E.calStatus.value=`Kalibroitu ${target} RPM • kerroin ${calFactor.toFixed(4)}`;
-       E.status.textContent=`Kalibrointi valmis: mitattu mediaani ${Math.round(measured)} RPM → ${target} RPM`;
-     }
-   }else{
-     E.calStatus.value='Kalibrointi epäonnistui';
-     E.status.textContent='Kalibrointi epäonnistui: signaali/confidence liian heikko.';
-   }
-   calSamples=[];
+function bandDb(f1,f2){
+ const bh=ac.sampleRate/an.fftSize;let sum=0,n=0;
+ for(let f=f1;f<=f2;f+=bh*3){const b=Math.round(f/bh);if(b<1||b>=freq.length)continue;sum+=Math.pow(10,freq[b]/10);n++}
+ return n?10*Math.log10(sum/n):-120;
+}
+function currentTargetRpm(){
+ if(idx<0||!plan[idx])return +ui.idleRpm.value||1800;
+ return plan[idx].rpm==='idle'?(+ui.idleRpm.value||1800):+plan[idx].rpm;
+}
+function estimateRPM(){
+ an.getFloatFrequencyData(freq);
+ const target=currentTargetRpm(), min=Math.max(500,target*.55), max=Math.max(min+500,target*1.55);
+ const fmin=min/60, fmax=max/60; let best={score:-1,f0:0,harm:[]};
+ for(let f=fmin;f<=fmax;f+=.5){
+   let score=0,p=0,harm=[];
+   for(let h=1;h<=6;h++){const d=dbAt(f*h),q=Math.max(0,Math.min(1,(d+95)/70));const w=[0,.55,1,.95,.8,.65,.5][h];score+=q*w;harm.push({h,f:f*h,db:d});if(d>-68)p++}
+   score+=Math.min(.9,p*.12);
+   if(score>best.score)best={score,f0:f,harm};
  }
- return {rpm:Math.round(smooth/10)*10,conf,best}
-
+ let raw=best.f0*60;
+ const cal=calibrations[String(plan[idx]?.rpm)];
+ if(cal && cal.f0>0){
+   // preserve calibration's detected harmonic relationship at this RPM point
+   const ratio=target/(cal.f0*60);
+   raw=best.f0*60*ratio;
+ }
+ if(lastRaw){const d=Math.abs(raw-lastRaw); if(d<Math.max(130,lastRaw*.035))stable++; else stable=Math.max(0,stable-2);}
+ lastRaw=raw;const spectral=Math.max(0,Math.min(1,(best.score-.8)/2.6));const conf=Math.round(100*(.7*spectral+.3*Math.min(1,stable/10)));
+ const a=conf>70?.34:conf>45?.2:.08;smooth=smooth?smooth+a*(raw-smooth):raw;
+ return {rpm:Math.round(smooth/10)*10,conf,f0:best.f0,harm:best.harm};
 }
-function level(){
- an.getFloatTimeDomainData(time);let s=0;for(const x of time)s+=x*x;let r=Math.sqrt(s/time.length);return r>1e-7?20*Math.log10(r):-120;
-}
-function draw(r){
- const g=E.cv.getContext('2d'),W=E.cv.width,H=E.cv.height,bin=ac.sampleRate/an.fftSize;g.fillStyle='#090b0f';g.fillRect(0,0,W,H);g.beginPath();
- for(let f=20,first=1;f<=1800;f+=3){let i=Math.round(f/bin),d=freq[i]??-120,n=Math.max(0,Math.min(1,(d+100)/80)),x=(f-20)/1780*W,y=H-10-n*(H-20);first?(g.moveTo(x,y),first=0):g.lineTo(x,y)}
- g.strokeStyle='#ff3535';g.lineWidth=2;g.stroke();
- for(let h=1;h<=6;h++){let f=r.best.f0*h;if(f>1800)continue;let x=(f-20)/1780*W;g.strokeStyle=h===1?'#38e18a':'#4ea1ff';g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke()}
+function drawSpec(){
+ const g=ui.spec.getContext('2d'),W=ui.spec.width,H=ui.spec.height,bh=ac.sampleRate/an.fftSize;
+ g.fillStyle='#070a0e';g.fillRect(0,0,W,H);g.beginPath();let first=true;
+ for(let f=20;f<=12000;f+=12){const b=Math.round(f/bh),db=freq[b]??-120,n=Math.max(0,Math.min(1,(db+105)/85)),x=(f-20)/11980*W,y=H-8-n*(H-16);if(first){g.moveTo(x,y);first=false}else g.lineTo(x,y)}
+ g.strokeStyle='#ff4141';g.lineWidth=2;g.stroke();
 }
 function loop(){
- if(!an)return;let r=estimate(),db=level();
- if(calActive){const left=Math.max(0,(calEnd-performance.now())/1000);E.calStatus.value=`Kalibroidaan ${E.calRpm.value} RPM • ${left.toFixed(1)} s`;}E.rpm.textContent=r.rpm.toLocaleString('fi-FI');E.conf.textContent=r.conf+'%';E.fund.textContent=r.best.f0.toFixed(1)+' Hz';E.level.textContent=(db<=-119?'-∞':db.toFixed(1))+' dB';
- let locked=r.conf>=65&&stable>=6;E.lock.textContent=locked?'RPM LOCKED':r.conf>=40?'HAETAAN LUKITUSTA':'EI LUKITUSTA';E.lock.style.color=locked?'#38e18a':'#ffb020';
- E.harms.innerHTML='';for(let h=1;h<=6;h++){let f=r.best.f0*h,d=r.best.v[h-1],x=document.createElement('div');x.className='h';x.innerHTML='<b>H'+h+'</b><span>'+(f<=1800?f.toFixed(0)+' Hz · '+d.toFixed(0)+' dB':'—')+'</span>';E.harms.appendChild(x)}
- draw(r);raf=requestAnimationFrame(loop)
+ if(!an)return;
+ const r=estimateRPM(),db=rmsDb(),hfdb=bandDb(2000,12000),hf=Math.round(Math.max(0,Math.min(100,(hfdb+95)/65*100)));
+ live={rpm:r.rpm,conf:r.conf,db,hf,f0:r.f0,harm:r.harm};
+ ui.rpm.textContent=live.rpm.toLocaleString('fi-FI');ui.conf.textContent=live.conf+'%';ui.level.textContent=(db<=-119?'-∞':db.toFixed(1));ui.hf.textContent=hf+'%';
+ if(measuring)samples.push({t:Date.now(),...live,target:plan[idx]?.rpm,place:plan[idx]?.place});
+ drawSpec();raf=requestAnimationFrame(loop);
 }
 
-E.start.onclick=start;
-E.stop.onclick=()=>{stop();E.status.textContent='Pysäytetty.'};
+function parseTargets(){return ui.targets.value.split(',').map(x=>x.trim()).filter(Boolean)}
+function buildPlan(){
+ const ts=parseTargets(), enabled=places.filter(p=>p.enabled);
+ const pp=[];
+ for(const t of ts){
+   pp.push({type:'cal',rpm:t,place:ui.calPlace.value,instruction:'Kalibroi tämä RPM-alue pakoputken loppupäässä.'});
+   for(const p of enabled){
+     if(p.name===ui.calPlace.value) continue;
+     pp.push({type:'test',rpm:t,place:p.name,kind:p.kind,instruction:p.instruction});
+   }
+ }
+ return pp;
+}
+function targetLabel(v){return v==='idle'?'TYHJÄKÄYNTI':`${v} RPM`}
+function showStep(){
+ if(idx<0||idx>=plan.length){finishSession();return}
+ const s=plan[idx],total=plan.length;
+ ui.stepText.textContent=s.type==='cal'?'KALIBROINTI':'MITTAUS';
+ ui.targetText.textContent=targetLabel(s.rpm);
+ ui.placeText.textContent=s.place;
+ ui.instruction.textContent=s.instruction+(s.type==='cal'?' Pidä kierrosluku mahdollisimman tasaisena ja paina MITTAA.':' Älä muuta tämän RPM-alueen kalibrointia.');
+ ui.progressText.textContent=`${idx+1} / ${total}`;
+ ui.overallFill.style.width=`${((idx)/total)*100}%`;
+ ui.countdown.textContent='Valmis mittaamaan.';
+ speak(`${targetLabel(s.rpm)}. ${s.type==='cal'?'Kalibrointi.':'Mittauspaikka.'} ${s.place}. ${s.instruction}`);
+ saveState();
+}
+function startSession(){
+ if(!an){alert('Käynnistä mikrofoni ensin.');return}
+ plan=buildPlan();idx=0;results=[];calibrations={};showStep();saveState();
+}
+ui.startSession.onclick=startSession;
+ui.resumeSession.onclick=()=>{loadState();if(plan.length&&idx>=0)showStep();else alert('Tallennettua testisarjaa ei löytynyt.');};
 
-const savedCal=parseFloat(localStorage.getItem('vanaAirpodCalFactor')||'1');
-if(Number.isFinite(savedCal) && savedCal>0.25 && savedCal<4){
-  calFactor=savedCal;
-  if(Math.abs(calFactor-1)>0.0001) E.calStatus.value=`Tallennettu kerroin ${calFactor.toFixed(4)}`;
+function countdown(sec,cb){
+ clearInterval(timer);let n=sec;ui.countdown.textContent=`Siirry paikalle · ${n} s`;
+ if(sec<=0){cb();return}
+ timer=setInterval(()=>{n--;ui.countdown.textContent=n>0?`Siirry paikalle · ${n} s`:'ALOITA';if(n<=0){clearInterval(timer);buzz(180);cb()}},1000);
+}
+function doMeasure(){
+ if(idx<0||!plan[idx]||measuring)return;
+ countdown(+ui.moveDelay.value||0,()=>{
+  measuring=true;samples=[];const dur=+ui.duration.value||10;let n=dur;
+  ui.measure.disabled=true;ui.skip.disabled=true;ui.countdown.textContent=`MITTAUS ${n} s`;speak('Mittaus alkaa');
+  timer=setInterval(()=>{
+    n--;ui.countdown.textContent=`MITTAUS ${Math.max(0,n)} s`;
+    if(n<=0){clearInterval(timer);finishMeasure();}
+  },1000);
+ });
+}
+function avg(k){return samples.length?samples.reduce((s,x)=>s+(+x[k]||0),0)/samples.length:0}
+function finishMeasure(){
+ measuring=false;ui.measure.disabled=false;ui.skip.disabled=false;const s=plan[idx];
+ const row={session:new Date().toISOString(),project:ui.project.value,type:s.type,rpm_target:s.rpm,rpm_reference:currentTargetRpm(),place:s.place,kind:s.kind||'calibration',
+   avg_rpm:Math.round(avg('rpm')),avg_conf:+avg('conf').toFixed(1),avg_db:+avg('db').toFixed(1),avg_hf:+avg('hf').toFixed(1),
+   tube_len_mm:ui.tubeLen.value||'',distance_mm:ui.distance.value||'',stud:ui.stud.value||'',pipe_dia_mm:ui.pipeDia.value||'',note:ui.note.value||'',status:'measured',samples:[...samples]};
+ if(s.type==='cal'){
+   const f0=avg('f0');calibrations[String(s.rpm)]={target:currentTargetRpm(),f0,avg_conf:row.avg_conf,avg_db:row.avg_db};
+   row.calibration_f0=+f0.toFixed(3);
+ }
+ results.push(row);renderResults();buzz([100,80,100]);speak('Mittaus valmis');
+ nextStep();
+}
+ui.measure.onclick=doMeasure;
+
+function skipStep(){
+ if(idx<0||!plan[idx])return;const s=plan[idx];
+ results.push({session:new Date().toISOString(),project:ui.project.value,type:s.type,rpm_target:s.rpm,rpm_reference:currentTargetRpm(),place:s.place,kind:s.kind||'calibration',status:'skipped',note:ui.note.value||''});
+ renderResults();speak('Ohitettu');nextStep();
+}
+ui.skip.onclick=skipStep;
+ui.back.onclick=()=>{if(idx>0){idx--;showStep()}};
+
+function nextStep(){
+ idx++;
+ if(idx>=plan.length){finishSession();return}
+ if(ui.autoAdvance.checked) showStep(); else showStep();
+}
+function finishSession(){
+ ui.stepText.textContent='TESTISARJA VALMIS';ui.targetText.textContent='✓';ui.placeText.textContent='Data tallennettu';ui.instruction.textContent='Lataa JSON ja lähetä se ChatGPT:lle analysoitavaksi. CSV sopii nopeaan taulukkovertailuun.';
+ ui.overallFill.style.width='100%';ui.progressText.textContent=`${plan.length} / ${plan.length}`;ui.countdown.textContent='Valmis.';speak('Testisarja valmis');saveState();
 }
 
-E.calibrate.onclick=()=>{
-  if(!an){
-    E.status.textContent='Käynnistä mikrofoni ennen kalibrointia.';
-    return;
-  }
-  const target=+E.calRpm.value;
-  calSamples=[];
-  calActive=true;
-  calEnd=performance.now()+4000;
-  E.calStatus.value=`Kalibroidaan ${target} RPM...`;
-  E.status.textContent=`Pidä moottori tasaisesti ${target} RPM:ssä 4 sekuntia.`;
+function renderResults(){
+ ui.resultsBody.innerHTML=results.map(r=>`<tr>
+  <td>${targetLabel(r.rpm_target)}</td><td>${r.place}</td>
+  <td class="${r.status==='measured'?'ok':'mid'}">${r.status}</td>
+  <td>${r.avg_rpm??'—'}</td><td>${r.avg_conf!=null?r.avg_conf+'%':'—'}</td><td>${r.avg_hf!=null?r.avg_hf+'%':'—'}</td><td>${r.avg_db??'—'}</td>
+ </tr>`).join('');
+}
+function dl(name,type,text){const b=new Blob([text],{type}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+ui.exportJson.onclick=()=>{
+ const payload={app:'VÄNÄ MotoLab Solo RPM & Knock Tester v1',project:ui.project.value,created:new Date().toISOString(),targets:parseTargets(),places,calibrations,results};
+ dl(`VANA_MotoLab_test_${Date.now()}.json`,'application/json',JSON.stringify(payload,null,2));
+};
+ui.exportCsv.onclick=()=>{
+ const h=['session','project','type','rpm_target','rpm_reference','place','kind','status','avg_rpm','avg_conf','avg_db','avg_hf','tube_len_mm','distance_mm','stud','pipe_dia_mm','note'];
+ const esc=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+ const txt='\ufeff'+h.join(';')+'\n'+results.map(r=>h.map(k=>esc(r[k])).join(';')).join('\n');
+ dl(`VANA_MotoLab_test_${Date.now()}.csv`,'text/csv;charset=utf-8',txt);
 };
 
-E.clearCal.onclick=()=>{
-  calFactor=1;
-  localStorage.removeItem('vanaAirpodCalFactor');
-  E.calStatus.value='Ei kalibroitu';
-  E.status.textContent='RPM-kalibrointi tyhjennetty.';
-  last=0;smooth=0;stable=0;
-};
-
-navigator.mediaDevices?.addEventListener?.('devicechange',devices);
-devices();
-
-</script></body></html>
+function saveState(){
+ localStorage.setItem('vanaSoloTesterState',JSON.stringify({places,plan,idx,results,calibrations,settings:{project:ui.project.value,targets:ui.targets.value,calPlace:ui.calPlace.value,duration:ui.duration.value,moveDelay:ui.moveDelay.value,idleRpm:ui.idleRpm.value}}));
+}
+function loadState(){
+ try{
+  const s=JSON.parse(localStorage.getItem('vanaSoloTesterState')||'null');if(!s)return;
+  places=s.places||places;plan=s.plan||[];idx=s.idx??-1;results=s.results||[];calibrations=s.calibrations||{};
+  const x=s.settings||{};for(const k of ['project','targets','calPlace','duration','moveDelay','idleRpm'])if(x[k]!=null)ui[k].value=x[k];
+  renderPlaces();renderResults();
+ }catch(e){}
+}
+loadState();renderResults();
+window.addEventListener('beforeunload',saveState);
+</script>
+</body></html>
